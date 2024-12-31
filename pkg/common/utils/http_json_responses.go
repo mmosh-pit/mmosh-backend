@@ -1,0 +1,34 @@
+package common
+
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+)
+
+func SendJSONResponse(w http.ResponseWriter, code int, payload interface{}) {
+	if payload == nil {
+		w.WriteHeader(code)
+		return
+	}
+
+	response, err := json.Marshal(payload)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
+}
+
+func SendErrorResponse(w http.ResponseWriter, code int, errors []string) {
+	log.Printf("Sending error response: %v\n", errors)
+	SendJSONResponse(w, code, map[string]interface{}{"errors": errors})
+}
+
+func SendSuccessResponse(w http.ResponseWriter, code int, payload interface{}) {
+	SendJSONResponse(w, code, map[string]interface{}{"data": payload})
+}
