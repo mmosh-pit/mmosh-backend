@@ -9,20 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var UnclePsyParticipant = chatDomain.Participant{
-	ID:      &primitive.NilObjectID,
-	Name:    "Uncle psy",
-	Type:    "bot",
-	Picture: "https://storage.googleapis.com/mmosh-assets/uncle-psy.png",
-}
-
-var AuntBeaParticipant = chatDomain.Participant{
-	ID:      &primitive.NilObjectID,
-	Name:    "Aunt Bea",
-	Type:    "bot",
-	Picture: "https://storage.googleapis.com/mmosh-assets/aunt-bea.png",
-}
-
 func CreateChat(ownerId *primitive.ObjectID, user *auth.User) *chatDomain.Chat {
 	client, ctx := config.GetMongoClient()
 	databaseName := config.GetDatabaseName()
@@ -31,18 +17,22 @@ func CreateChat(ownerId *primitive.ObjectID, user *auth.User) *chatDomain.Chat {
 
 	_id := primitive.NewObjectID()
 
-	userParticipantId := primitive.NewObjectID()
-
 	userParticipant := chatDomain.Participant{
-		ID:      &userParticipantId,
+		ID:      ownerId,
 		Type:    "user",
 		Name:    user.Name,
 		Picture: "https://storage.googleapis.com/mmosh-assets/avatar_placeholder.png",
 	}
 
+	botParticipants := GetBotUsers()
+
+	participants := botParticipants
+
+	participants = append(participants, userParticipant)
+
 	newChat := chatDomain.Chat{
 		ID:           &_id,
-		Participants: []chatDomain.Participant{userParticipant, UnclePsyParticipant, AuntBeaParticipant},
+		Participants: participants,
 		Messages:     []chatDomain.Message{},
 		Owner:        ownerId,
 	}

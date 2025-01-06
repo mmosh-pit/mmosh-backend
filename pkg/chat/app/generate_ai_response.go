@@ -2,6 +2,7 @@ package chat
 
 import (
 	"encoding/json"
+	"math/rand/v2"
 
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
 	chatDb "github.com/mmosh-pit/mmosh_backend/pkg/chat/db"
@@ -28,16 +29,28 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 
 	id := primitive.NewObjectID()
 
-	chatDb.SaveMessage(message)
+	chatDb.SaveMessage(message, message.Sender)
 
-	go chatDb.FetchAIResponse(user.Name, message.Content, []string{"PUBLIC"}, textChan)
+	index := randRange(0, 2)
+
+	loadingMessage := chatDomain.Message{
+		ID:        &id,
+		Content:   "",
+		Type:      "bot",
+		Sender:    botParticipantUsers[index].ID,
+		IsLoading: true,
+	}
+
+	client.sendResponse(loadingMessage)
 
 	generatedMessage := chatDomain.Message{
 		ID:      &id,
 		Content: "",
 		Type:    "bot",
-		Sender:  &primitive.NilObjectID,
+		Sender:  botParticipantUsers[index].ID,
 	}
+
+	go chatDb.FetchAIResponse(user.Name, message.Content, []string{"PUBLIC"}, textChan)
 
 	for {
 		text := <-textChan
@@ -47,12 +60,16 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 			break
 		}
 
+		streamedMessage := chatDomain.Message{
+			ID:      &id,
+			Content: text,
+			Type:    "bot",
+			Sender:  botParticipantUsers[index].ID,
+		}
+
 		data := map[string]interface{}{
 			"event": "aiMessage",
-			"data": map[string]interface{}{
-				"content": text,
-				"id":      id,
-			},
+			"data":  streamedMessage,
 		}
 
 		generatedMessage.Content = generatedMessage.Content + text
@@ -60,5 +77,9 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 		client.sendResponse(data)
 	}
 
-	chatDb.SaveMessage(&generatedMessage)
+	chatDb.SaveMessage(&generatedMessage, message.Sender)
+}
+
+func randRange(min, max int) int {
+	return rand.IntN(max-min) + min
 }

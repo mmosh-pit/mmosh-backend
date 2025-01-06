@@ -10,5 +10,5 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /app
 COPY --from=builder /builder/mmosh-backend ./mmosh-backend
 COPY --from=builder /builder/.env ./.env
-EXPOSE 8000
+EXPOSE 6000
 CMD ["./mmosh-backend"]

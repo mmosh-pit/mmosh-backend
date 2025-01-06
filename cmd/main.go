@@ -24,6 +24,7 @@ func main() {
 	log.Printf("Server starting on port 6000")
 
 	go chat.CreatePool()
+	go chat.SetupBotUsers()
 
 	err := srv.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
