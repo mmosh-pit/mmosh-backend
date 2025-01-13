@@ -17,11 +17,11 @@ func main() {
 	defer config.DisconnectMongoClient()
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", 6000),
+		Addr:    fmt.Sprintf(":%d", 6050),
 		Handler: http.HandlerFunc(serve),
 	}
 
-	log.Printf("Server starting on port 6000")
+	log.Printf("Server starting on port 6050")
 
 	go chat.CreatePool()
 	go chat.SetupBotUsers()

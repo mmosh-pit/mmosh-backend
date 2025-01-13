@@ -7,6 +7,7 @@ require github.com/gorilla/websocket v1.5.3
 require (
 	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
+	github.com/cloudmailin/cloudmailin-go v0.2.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gagliardetto/binary v0.8.0 // indirect

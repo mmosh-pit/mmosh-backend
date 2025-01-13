@@ -35,6 +35,5 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Returning login: %v\n", *response.Token)
-
 	common.SendSuccessResponse(w, http.StatusOK, response)
 }

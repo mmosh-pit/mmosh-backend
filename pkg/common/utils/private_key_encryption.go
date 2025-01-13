@@ -4,72 +4,49 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/sha512"
 	"encoding/hex"
-	"log"
 
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 )
 
 func EncryptPrivateKey(plaintext string) string {
 	secretKey, secretIv := config.GetEncryptionKeys()
+	bKey := []byte(secretKey)
+	bIV := []byte(secretIv)
+	blockSize := aes.BlockSize
 
-	// Derive key from secretKey using SHA512
-	key := sha512.Sum512([]byte(secretKey))
-
-	// Derive initialization vector (IV) from secretIv using SHA512
-	iv := sha512.Sum512([]byte(secretIv))
-
-	// Pad the plaintext
-	plaintextBytes := PKCS5Padding([]byte(plaintext), aes.BlockSize)
-
-	block, err := aes.NewCipher(key[:32])
+	bPlaintext := PKCS5Padding([]byte(plaintext), blockSize, len(plaintext))
+	block, err := aes.NewCipher(bKey)
 	if err != nil {
-		log.Printf("Got error: %v\n", err)
-		return ""
+		panic(err)
 	}
-
-	ciphertext := make([]byte, len(plaintextBytes))
-	mode := cipher.NewCBCEncrypter(block, iv[:16])
-	mode.CryptBlocks(ciphertext, plaintextBytes)
-
-	result := hex.EncodeToString(ciphertext)
-
-	return result
+	ciphertext := make([]byte, len(bPlaintext))
+	mode := cipher.NewCBCEncrypter(block, bIV)
+	mode.CryptBlocks(ciphertext, bPlaintext)
+	return hex.EncodeToString(ciphertext)
 }
 
-func DecryptPrivateKey(encryptedData string) string {
+func DecryptPrivateKey(cipherText string) (decryptedString string) {
 	secretKey, secretIv := config.GetEncryptionKeys()
-
-	// Derive key from secretKey using SHA512
-	key := sha512.Sum512([]byte(secretKey))
-
-	// Derive initialization vector (IV) from secretIv using SHA512
-	iv := sha512.Sum512([]byte(secretIv))
-
-	plaintextBytes, err := hex.DecodeString(encryptedData)
-
+	bKey := []byte(secretKey)
+	bIV := []byte(secretIv)
+	cipherTextDecoded, err := hex.DecodeString(cipherText)
 	if err != nil {
-		return ""
+		panic(err)
 	}
 
-	// Create AES decrypter
-	block, err := aes.NewCipher(key[:32])
+	block, err := aes.NewCipher(bKey)
 	if err != nil {
-		return ""
+		panic(err)
 	}
 
-	decrypted := make([]byte, len(plaintextBytes))
-	mode := cipher.NewCBCDecrypter(block, iv[:16])
-	mode.CryptBlocks(decrypted, plaintextBytes)
-
-	result := hex.EncodeToString(decrypted)
-
-	return result
+	mode := cipher.NewCBCDecrypter(block, bIV)
+	mode.CryptBlocks([]byte(cipherTextDecoded), []byte(cipherTextDecoded))
+	return string(cipherTextDecoded)
 }
 
-func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
-	padding := blockSize - len(ciphertext)%blockSize
+func PKCS5Padding(ciphertext []byte, blockSize int, after int) []byte {
+	padding := (blockSize - len(ciphertext)%blockSize)
 	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
 	return append(ciphertext, padtext...)
 }

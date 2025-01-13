@@ -38,3 +38,8 @@ type VerificationData struct {
 	Email string `bson:"email" json:"email"`
 	Code  int    `bson:"code" json:"code"`
 }
+
+type KeyPair struct {
+	PrivateKey string `json:"privateKey"`
+	PublicKey  string `json:"publicKey"`
+}

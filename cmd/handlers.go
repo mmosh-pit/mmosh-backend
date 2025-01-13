@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	authHttp "github.com/mmosh-pit/mmosh_backend/pkg/auth/http"
 	chatHttp "github.com/mmosh-pit/mmosh_backend/pkg/chat/http"
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
+	mailHttp "github.com/mmosh-pit/mmosh_backend/pkg/mail/http"
 	walletHttp "github.com/mmosh-pit/mmosh_backend/pkg/wallet/http"
 )
 
@@ -26,6 +28,8 @@ var routes = []route{
 	newRoute("GET", "/chat", chatHttp.WsHandler, true, true),
 
 	newRoute("GET", "/all-tokens", walletHttp.GetAllCoinAddressHandler, true, false),
+	newRoute("POST", "/mail", mailHttp.IncomingEmailHandler, false, false),
+	newRoute("GET", "/private-key", authHttp.GetPrivateKeyHandler, true, false),
 }
 
 type route struct {
@@ -53,6 +57,15 @@ func serve(w http.ResponseWriter, r *http.Request) {
 	var allow []string
 	var invalidAuthentication []string
 	var invalidPayload []string
+	isOptions := false
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Vary", "Origin")
+	w.Header().Add("Vary", "Access-Control-Request-Method")
+	w.Header().Add("Vary", "Access-Control-Request-Headers")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Add("Access-Control-Allow-Headers", "Content-Type, Origin, Accept, token, withCredentials, authorization")
+	w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH,OPTIONS")
 
 	for _, route := range routes {
 		matches := route.regex.FindStringSubmatch(r.URL.Path)
@@ -67,12 +80,18 @@ func serve(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		if r.Method == "OPTIONS" {
+			isOptions = true
+			continue
+		}
+
 		if r.Method != route.method {
 			allow = append(allow, route.method)
 			continue
 		}
 
 		if route.requiresAuthentication {
+			log.Println("Requires authentication?????")
 			reqToken := r.Header.Get("Authorization")
 			token := strings.Replace(reqToken, "Bearer ", "", 1)
 
@@ -89,6 +108,7 @@ func serve(w http.ResponseWriter, r *http.Request) {
 			r.Header.Set("userId", userId)
 		}
 
+		log.Println("Sending to handler")
 		SetRouteParams(r, params)
 		route.handler(w, r)
 
@@ -107,6 +127,11 @@ func serve(w http.ResponseWriter, r *http.Request) {
 
 	if len(allow) > 0 {
 		common.SendErrorResponse(w, http.StatusMethodNotAllowed, nil)
+		return
+	}
+
+	if isOptions {
+		common.SendSuccessResponse(w, http.StatusOK, nil)
 		return
 	}
 
