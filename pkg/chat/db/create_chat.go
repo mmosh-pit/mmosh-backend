@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateChat(ownerId *primitive.ObjectID, user *auth.User) *chatDomain.Chat {
+func CreateChat(user *auth.User) *chatDomain.Chat {
 	client, ctx := config.GetMongoClient()
 	databaseName := config.GetDatabaseName()
 
@@ -18,7 +18,7 @@ func CreateChat(ownerId *primitive.ObjectID, user *auth.User) *chatDomain.Chat {
 	_id := primitive.NewObjectID()
 
 	userParticipant := chatDomain.Participant{
-		ID:      ownerId,
+		ID:      user.ID,
 		Type:    "user",
 		Name:    user.Name,
 		Picture: "https://storage.googleapis.com/mmosh-assets/avatar_placeholder.png",
@@ -34,7 +34,7 @@ func CreateChat(ownerId *primitive.ObjectID, user *auth.User) *chatDomain.Chat {
 		ID:           &_id,
 		Participants: participants,
 		Messages:     []chatDomain.Message{},
-		Owner:        ownerId,
+		Owner:        user.ID,
 	}
 
 	res, err := collection.InsertOne(*ctx, newChat)

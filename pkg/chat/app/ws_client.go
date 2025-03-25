@@ -15,7 +15,7 @@ func (c *ClientData) Read() {
 		err := c.Client.Conn.Close()
 
 		if err != nil {
-			log.Printf("Error closing connection: %s", err)
+			log.Printf("Error closing connection 1: %s", err)
 		}
 	}()
 
@@ -25,10 +25,15 @@ func (c *ClientData) Read() {
 		_, data, err := c.Client.Conn.ReadMessage()
 		if err != nil {
 			log.Printf("Error: %s", err)
+
+			WsPool.Leave <- c
+			err := c.Client.Conn.Close()
+
+			if err != nil {
+				log.Printf("Error closing connection 2: %v\n", err)
+			}
 			return
 		}
-
-		log.Printf("We got data: %v\n", string(data))
 
 		var decoded chat.SocketMessage
 

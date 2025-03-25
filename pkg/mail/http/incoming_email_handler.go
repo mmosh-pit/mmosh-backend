@@ -12,6 +12,7 @@ import (
 func IncomingEmailHandler(w http.ResponseWriter, r *http.Request) {
 	message, err := cloudmailin.ParseIncoming(r.Body)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Error parsing message: "+err.Error(), http.StatusUnprocessableEntity)
 		return
 	}

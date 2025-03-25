@@ -2,11 +2,14 @@ package auth
 
 import (
 	"github.com/gagliardetto/solana-go"
+	"github.com/google/uuid"
 	authDb "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
 	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	utils "github.com/mmosh-pit/mmosh_backend/pkg/auth/utils"
+	chatDb "github.com/mmosh-pit/mmosh_backend/pkg/chat/db"
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/domain"
 	commonUtils "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type SignUpResponse struct {
@@ -43,7 +46,12 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 
 	privateKey := commonUtils.EncryptPrivateKey(wallet.PrivateKey.String())
 
+	uuid, _ := uuid.NewRandom()
+
+	id := primitive.NewObjectID()
+
 	user := &authDomain.User{
+		ID:         &id,
 		Name:       params.Name,
 		Email:      params.Email,
 		Bsky:       authDomain.BlueskyData{},
@@ -52,6 +60,7 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 		Sessions:   []string{*token},
 		ReferredBy: "",
 		PrivateKey: privateKey,
+		UUID:       uuid.String(),
 	}
 
 	err = authDb.CreateUser(user)
@@ -67,6 +76,8 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 		Token: token,
 		User:  user,
 	}
+
+	chatDb.CreateChat(user)
 
 	return response, nil
 }

@@ -2,7 +2,9 @@ package chat
 
 import (
 	"encoding/json"
+	"log"
 	"math/rand/v2"
+	"time"
 
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
 	chatDb "github.com/mmosh-pit/mmosh_backend/pkg/chat/db"
@@ -11,6 +13,7 @@ import (
 )
 
 func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
+	log.Println("0")
 	user, err := auth.GetUserById(message.Sender.Hex())
 
 	if err != nil {
@@ -25,32 +28,53 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 		return
 	}
 
+	log.Println("1")
+
 	textChan := make(chan string)
 
 	id := primitive.NewObjectID()
 
-	chatDb.SaveMessage(message, message.Sender)
+	chatDb.SaveMessage(message, message.ChatId)
+	chatDb.UpdateChatLastMessage(message)
 
 	index := randRange(0, 2)
+
+	senderId := botParticipantUsers[index].ID
+
+	if message.AgentId != nil {
+		senderId = message.AgentId
+	}
 
 	loadingMessage := chatDomain.Message{
 		ID:        &id,
 		Content:   "",
 		Type:      "bot",
-		Sender:    botParticipantUsers[index].ID,
+		Sender:    senderId,
 		IsLoading: true,
+		AgentId:   message.AgentId,
+		ChatId:    message.ChatId,
 	}
 
-	client.sendResponse(loadingMessage)
+	data := map[string]interface{}{
+		"event": "aiMessage",
+		"data":  loadingMessage,
+	}
+
+	client.sendResponse(data)
+
+	createdDate := time.Now()
 
 	generatedMessage := chatDomain.Message{
-		ID:      &id,
-		Content: "",
-		Type:    "bot",
-		Sender:  botParticipantUsers[index].ID,
+		ID:        &id,
+		Content:   "",
+		Type:      "bot",
+		Sender:    senderId,
+		CreatedAt: createdDate,
+		AgentId:   message.AgentId,
+		ChatId:    message.ChatId,
 	}
 
-	go chatDb.FetchAIResponse(user.Name, message.Content, []string{"PUBLIC"}, textChan)
+	go chatDb.FetchAIResponse(user.Name, message.Content, message.SystemPrompt, message.Namespaces, textChan)
 
 	for {
 		text := <-textChan
@@ -61,10 +85,13 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 		}
 
 		streamedMessage := chatDomain.Message{
-			ID:      &id,
-			Content: text,
-			Type:    "bot",
-			Sender:  botParticipantUsers[index].ID,
+			ID:        &id,
+			Content:   text,
+			Type:      "bot",
+			Sender:    senderId,
+			CreatedAt: createdDate,
+			AgentId:   message.AgentId,
+			ChatId:    message.ChatId,
 		}
 
 		data := map[string]interface{}{
@@ -77,7 +104,8 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 		client.sendResponse(data)
 	}
 
-	chatDb.SaveMessage(&generatedMessage, message.Sender)
+	chatDb.SaveMessage(&generatedMessage, message.ChatId)
+	chatDb.UpdateChatLastMessage(&generatedMessage)
 }
 
 func randRange(min, max int) int {

@@ -3,6 +3,7 @@ package chat
 import (
 	"log"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	chat "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
@@ -12,7 +13,7 @@ import (
 type Pool struct {
 	Connect     chan *ClientData
 	Leave       chan *ClientData
-	AskAI       chan *Message
+	AskAI       chan *AIMessage
 	SendMessage chan *Message
 	Clients     map[string]*PoolClient
 }
@@ -25,11 +26,23 @@ type ClientData struct {
 type PoolClient struct {
 	Conn       *websocket.Conn
 	WriteMutex sync.Mutex
+	Pool       *Pool
+}
+
+type AIMessage struct {
+	UserId       string
+	Content      string
+	Namespaces   []string
+	SystemPrompt string
 }
 
 type Message struct {
-	UserId  string
-	Content string
+	ChatId       string   `json:"chat_id"`
+	AgentId      string   `json:"agent_id"`
+	UserId       string   `json:"user_id"`
+	Content      string   `json:"content"`
+	Namespaces   []string `json:"namespaces"`
+	SystemPrompt string   `json:"system_prompt"`
 }
 
 var WsPool *Pool
@@ -39,7 +52,7 @@ func CreatePool() {
 		Connect:     make(chan *ClientData),
 		Leave:       make(chan *ClientData),
 		Clients:     make(map[string]*PoolClient),
-		AskAI:       make(chan *Message),
+		AskAI:       make(chan *AIMessage),
 		SendMessage: make(chan *Message),
 	}
 
@@ -58,6 +71,7 @@ func Start() {
 			break
 
 		case client := <-WsPool.Leave:
+			log.Printf("Deleting client: %v\n", client.UserId)
 			delete(WsPool.Clients, client.UserId)
 			break
 
@@ -71,14 +85,77 @@ func Start() {
 
 			userId, _ := primitive.ObjectIDFromHex(message.UserId)
 
-			data := chat.Message{
-				ID:      &id,
-				Content: message.Content,
-				Sender:  &userId,
-				Type:    "user",
+			messageData := chat.Message{
+				ID:        &id,
+				Content:   message.Content,
+				Sender:    &userId,
+				CreatedAt: time.Now(),
+				Type:      "user",
 			}
 
-			go GenerateAIResponse(client, &data)
+			data := map[string]interface{}{
+				"event": "userMessage",
+				"data":  messageData,
+			}
+
+			go GenerateAIResponse(client, &messageData)
+
+			client.sendResponse(data)
+			break
+
+		case message := <-WsPool.SendMessage:
+			client, ok := WsPool.Clients[message.UserId]
+			if !ok {
+				break
+			}
+
+			log.Println("Gonna send...")
+
+			id := primitive.NewObjectID()
+
+			log.Println("1")
+
+			userId, _ := primitive.ObjectIDFromHex(message.UserId)
+			log.Println("2")
+
+			agentId, err := primitive.ObjectIDFromHex(message.AgentId)
+			log.Println("3")
+
+			resultingId := &agentId
+
+			if err != nil {
+				resultingId = nil
+			}
+			log.Println("4")
+
+			chatId, err := primitive.ObjectIDFromHex(message.ChatId)
+
+			if err != nil {
+				log.Printf("Invalid chat object ID: %v, %v\n", message.ChatId, err)
+				break
+			}
+			log.Println("5")
+
+			messageData := chat.Message{
+				ID:           &id,
+				Content:      message.Content,
+				Sender:       &userId,
+				CreatedAt:    time.Now(),
+				Type:         "user",
+				Namespaces:   message.Namespaces,
+				SystemPrompt: message.SystemPrompt,
+				AgentId:      resultingId,
+				ChatId:       &chatId,
+			}
+
+			data := map[string]interface{}{
+				"event": "userMessage",
+				"data":  messageData,
+			}
+			log.Println("6")
+
+			go GenerateAIResponse(client, &messageData)
+			log.Println("7")
 
 			client.sendResponse(data)
 			break
@@ -88,7 +165,12 @@ func Start() {
 }
 
 func (p *PoolClient) sendResponse(message interface{}) {
+	log.Printf("Gonna send message: %v\n", message)
 	p.WriteMutex.Lock()
 	defer p.WriteMutex.Unlock()
-	p.Conn.WriteJSON(message)
+	err := p.Conn.WriteJSON(message)
+
+	if err != nil {
+		log.Printf("Error while trying to send JSON: %v\n", err)
+	}
 }

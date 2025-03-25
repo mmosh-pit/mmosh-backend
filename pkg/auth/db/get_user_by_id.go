@@ -32,5 +32,7 @@ func GetUserById(id string) (authDomain.User, error) {
 		return result, err
 	}
 
+	result.Password = ""
+
 	return result, nil
 }

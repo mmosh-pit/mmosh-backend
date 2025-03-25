@@ -4,16 +4,16 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 )
 
-func FetchAIResponse(username, text string, namespaces []string, callbackChan chan string) {
+func FetchAIResponse(username, text, systemPrompt string, namespaces []string, callbackChan chan string) {
 	data := map[string]interface{}{
-		"username":   username,
-		"prompt":     text,
-		"namespaces": namespaces,
+		"username":      username,
+		"prompt":        text,
+		"namespaces":    namespaces,
+		"system_prompt": systemPrompt,
 	}
 
 	encoded, err := json.Marshal(data)
@@ -42,8 +42,6 @@ func FetchAIResponse(username, text string, namespaces []string, callbackChan ch
 		close(callbackChan)
 		return
 	}
-
-	fmt.Println("Response: Content-length:", resp.Header.Get("Content-length"))
 
 	reader := bufio.NewReader(resp.Body)
 

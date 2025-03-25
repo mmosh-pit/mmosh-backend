@@ -2,6 +2,7 @@ package mail
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/cloudmailin/cloudmailin-go"
 )
@@ -15,15 +16,11 @@ func ProcessIncomingEmail(email, text, to string) {
 		// are any failures at all.
 		client, err := cloudmailin.NewClient()
 		if err != nil {
-			panic(err)
+			log.Printf("Error trying to create email client: %v\n", err)
+			return
 		}
 
 		fromEmail := to
-
-		// SMTP Settings will be taken from CLOUDMAILIN_SMTP_URL env variable by
-		// default but they can be overridden.
-		// client.SMTPAccountID = ""
-		// client.SMTPToken = ""
 
 		email := cloudmailin.OutboundMail{
 			From:     fromEmail,
@@ -41,7 +38,8 @@ func ProcessIncomingEmail(email, text, to string) {
 		// JSON returned from the call if successful.
 		_, err = client.SendMail(&email)
 		if err != nil {
-			panic(err)
+			log.Printf("Got error trying to send email: %v\n", err)
+			return
 		}
 
 		// The email.ID should now be populated

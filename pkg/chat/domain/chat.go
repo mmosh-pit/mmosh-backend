@@ -7,4 +7,7 @@ type Chat struct {
 	Participants []Participant       `bson:"participants" json:"participants"`
 	Messages     []Message           `bson:"messages" json:"messages"`
 	Owner        *primitive.ObjectID `bson:"owner" json:"owner"`
+	Agent        *ChatAgent          `bson:"chatAgent" json:"chatAgent"`
+	Deactivated  bool                `bson:"deactivated" json:"deactivated"`
+	LastMessage  Message             `bson:"lastMessage" json:"lastMessage"`
 }
