@@ -29,6 +29,7 @@ var routes = []route{
 
 	newRoute("GET", "/agents", agentsHttp.GetAgentsHandler, false, false),
 	newRoute("POST", "/agents/activate", agentsHttp.ToggleActivateHandler, true, false),
+	newRoute("POST", "/agents/create", agentsHttp.CreateAgentHandler, true, false),
 	newRoute("GET", "/agents/active", agentsHttp.GetActiveAgentsHandler, true, false),
 
 	newRoute("GET", "/chat", chatHttp.WsHandler, true, true),
