@@ -44,6 +44,8 @@ func Login(data authDomain.LoginParams) (*LoginResponse, error) {
 	user.Password = ""
 	user.Sessions = []string{}
 
+	CreateWallet(user.Email)
+
 	return &LoginResponse{
 		Token: token,
 		User:  &user,

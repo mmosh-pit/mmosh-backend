@@ -15,6 +15,8 @@ var (
 	secretKey         string
 	secretIv          string
 
+	walletBackenUrl string
+
 	AppleAppStoreBundleId string
 	AppleAppStoreIssuer   string
 	AppleAppStoreSandbox  bool
@@ -127,6 +129,12 @@ func ValidateEnvironmentVariables(path string) {
 		panic("GOOGLE_APP_STORE_BUNDLE_ID is not present")
 	}
 
+	foundWalletBackendUrl, ok := os.LookupEnv("WALLET_BACKEND_URL")
+
+	if !ok {
+		panic("WALLET_BACKEND_URL is missing")
+	}
+
 	AppleAppStoreBundleId = foundAppleAppStoreBundleId
 	AppleAppStoreIssuer = foundAppleAppStoreIssuer
 	AppleAppStoreSandbox = boolAppleAppStoreSandbox
@@ -141,6 +149,8 @@ func ValidateEnvironmentVariables(path string) {
 	GoogleBillingPubSubSubscription = foundGoogleBillingPubSubSubscription
 	GoogleBillingPubSubVerificationToken = foundGoogleBillingPubSubVerificationToken
 	GoogleAppStoreBundleId = foundGoogleAppStoreBundleId
+
+	walletBackenUrl = foundWalletBackendUrl
 }
 
 func GetMongoURI() *string {
@@ -165,4 +175,8 @@ func GetAppleAppStoreServerEnvVariables() (string, string) {
 
 func GetAppleAppStoreConnectEnvVariables() (string, string) {
 	return AppleAppStoreConnectPrivateKey, AppleAppStoreConnectKeyId
+}
+
+func GetWalletBackendUrl() *string {
+	return &walletBackenUrl
 }

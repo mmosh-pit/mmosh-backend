@@ -13,6 +13,7 @@ import (
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
 	googleHttp "github.com/mmosh-pit/mmosh_backend/pkg/google/http"
 	mailHttp "github.com/mmosh-pit/mmosh_backend/pkg/mail/http"
+	postsHttp "github.com/mmosh-pit/mmosh_backend/pkg/posts/http"
 	subscriptionsHttp "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/http"
 	walletHttp "github.com/mmosh-pit/mmosh_backend/pkg/wallet/http"
 )
@@ -23,6 +24,9 @@ var routes = []route{
 	newRoute("POST", "/login", authHttp.LoginHandler, false, false),
 	newRoute("POST", "/request-code", authHttp.RequestCodeHandler, false, false),
 	newRoute("POST", "/signup", authHttp.SignUpHandler, false, false),
+
+	newRoute("GET", "/address", authHttp.GetWalletAddressHandler, true, false),
+	newRoute("POST", "/sign", authHttp.SignTransactionHandler, true, false),
 
 	newRoute("GET", "/is-auth", authHttp.IsAuthHandler, true, false),
 	newRoute("DELETE", "/logout", authHttp.LogoutHandler, true, false),
@@ -43,6 +47,11 @@ var routes = []route{
 	newRoute("POST", "/apple-notifications/v2", appleHttp.WebhookHandler, false, false),
 
 	newRoute("GET", "/subscriptions", subscriptionsHttp.GetSubscriptionsHandler, true, false),
+
+	newRoute("GET", "/posts", postsHttp.GetAllPostsHandler, true, false),
+	newRoute("POST", "/posts", postsHttp.CreatePostHandler, true, false),
+	newRoute("GET", "/posts/author", postsHttp.HandlePostsByAuthor, true, false),
+	newRoute("GET", "/posts/slug", postsHttp.HandlePostBySlug, true, false),
 }
 
 type route struct {

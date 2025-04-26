@@ -29,9 +29,16 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 
 	response, err := authApp.SignUp(&data)
 	if err != nil {
-		log.Printf("error sign up: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{err.Error()})
-		return
+
+		switch err {
+		case authDomain.ErrWalletAlreadyExists:
+			common.SendErrorResponse(w, http.StatusBadRequest, []string{err.Error()})
+			return
+		default:
+			log.Printf("error sign up: %v", err)
+			common.SendErrorResponse(w, http.StatusInternalServerError, []string{err.Error()})
+			return
+		}
 	}
 
 	common.SendSuccessResponse(w, http.StatusOK, response)

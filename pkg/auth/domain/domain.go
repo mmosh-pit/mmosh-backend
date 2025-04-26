@@ -1,8 +1,14 @@
 package auth
 
 import (
+	"errors"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+var ErrSomethingWentWrong = errors.New("Something Went Wrong")
+var ErrWalletAlreadyExists = errors.New("wallet-exists")
 
 type LoginParams struct {
 	Handle   string `json:"handle"`
@@ -56,4 +62,17 @@ type VerificationData struct {
 type KeyPair struct {
 	PrivateKey string `json:"privateKey"`
 	PublicKey  string `json:"publicKey"`
+}
+
+type WalletResponse struct {
+	Address    string   `json:"address"`
+	KeyPackage []string `json:"key_package"`
+}
+
+type Wallet struct {
+	Address    string    `json:"address" bson:"address"`
+	KeyPackage string    `json:"key_package" bson:"key_package"`
+	Email      string    `json:"email" bson:"email"`
+	CreatedAt  time.Time `json:"created_at" bson:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at" bson:"updated_at"`
 }

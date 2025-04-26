@@ -2,7 +2,6 @@ package common
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -25,7 +24,6 @@ func SendJSONResponse(w http.ResponseWriter, code int, payload interface{}) {
 }
 
 func SendErrorResponse(w http.ResponseWriter, code int, errors []string) {
-	log.Printf("Sending error response: %v\n", errors)
 	SendJSONResponse(w, code, map[string]interface{}{"errors": errors})
 }
 

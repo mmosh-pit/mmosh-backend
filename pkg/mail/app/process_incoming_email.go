@@ -5,10 +5,11 @@ import (
 	"log"
 
 	"github.com/cloudmailin/cloudmailin-go"
+	common "github.com/mmosh-pit/mmosh_backend/pkg/common/app"
 )
 
 func ProcessIncomingEmail(email, text, to string) {
-	response := FetchAIResponse("VISITOR", text, []string{"PUBLIC"})
+	response := common.FetchAIResponse("VISITOR", text, "", []string{"PUBLIC"})
 
 	if response != "" {
 

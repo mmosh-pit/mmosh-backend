@@ -1,14 +1,12 @@
 package auth
 
 import (
-	"github.com/gagliardetto/solana-go"
 	"github.com/google/uuid"
 	authDb "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
 	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	utils "github.com/mmosh-pit/mmosh_backend/pkg/auth/utils"
 	chatDb "github.com/mmosh-pit/mmosh_backend/pkg/chat/db"
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/domain"
-	commonUtils "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -36,15 +34,17 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 		return nil, err
 	}
 
-	wallet := solana.NewWallet()
+	err = CreateWallet(params.Email)
+
+	if err != nil {
+		return nil, err
+	}
 
 	password, err := utils.EncryptPassword(params.Password)
 
 	if err != nil {
 		return nil, err
 	}
-
-	privateKey := commonUtils.EncryptPrivateKey(wallet.PrivateKey.String())
 
 	uuid, _ := uuid.NewRandom()
 
@@ -55,11 +55,9 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 		Name:       params.Name,
 		Email:      params.Email,
 		Bsky:       authDomain.BlueskyData{},
-		Address:    wallet.PublicKey().String(),
 		Password:   password,
 		Sessions:   []string{*token},
 		ReferredBy: "",
-		PrivateKey: privateKey,
 		UUID:       uuid.String(),
 	}
 

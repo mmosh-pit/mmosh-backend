@@ -1,4 +1,4 @@
-package mail
+package common
 
 import (
 	"bufio"
@@ -8,11 +8,12 @@ import (
 	"net/http"
 )
 
-func FetchAIResponse(username, text string, namespaces []string) string {
+func FetchAIResponse(username, text, systemPrompt string, namespaces []string) string {
 	data := map[string]interface{}{
-		"username":   username,
-		"prompt":     text,
-		"namespaces": namespaces,
+		"username":      username,
+		"prompt":        text,
+		"namespaces":    namespaces,
+		"system_promtp": systemPrompt,
 	}
 
 	encoded, err := json.Marshal(data)
