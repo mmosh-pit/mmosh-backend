@@ -17,6 +17,11 @@ var (
 
 	walletBackenUrl string
 
+	kartraAppId       string
+	kartraApiKey      string
+	kartraApiPassword string
+	kartraApiBase     string
+
 	AppleAppStoreBundleId string
 	AppleAppStoreIssuer   string
 	AppleAppStoreSandbox  bool
@@ -135,6 +140,35 @@ func ValidateEnvironmentVariables(path string) {
 		panic("WALLET_BACKEND_URL is missing")
 	}
 
+	foundKartraAppId, ok := os.LookupEnv("KARTRA_APP_ID")
+
+	if !ok {
+		panic("KARTRA_APP_ID is missing")
+	}
+
+	foundKartraApiKey, ok := os.LookupEnv("KARTRA_API_KEY")
+
+	if !ok {
+		panic("KARTRA_API_KEY is missing")
+	}
+
+	foundKartraApiPassword, ok := os.LookupEnv("KARTRA_API_PASSWORD")
+
+	if !ok {
+		panic("KARTRA_API_PASSWORD is missing")
+	}
+
+	foundKartraApiBase, ok := os.LookupEnv("KARTRA_API_BASE")
+
+	if !ok {
+		panic("KARTRA_API_BASE is missing")
+	}
+
+	kartraAppId = foundKartraAppId
+	kartraApiKey = foundKartraApiKey
+	kartraApiPassword = foundKartraApiPassword
+	kartraApiBase = foundKartraApiBase
+
 	AppleAppStoreBundleId = foundAppleAppStoreBundleId
 	AppleAppStoreIssuer = foundAppleAppStoreIssuer
 	AppleAppStoreSandbox = boolAppleAppStoreSandbox
@@ -179,4 +213,8 @@ func GetAppleAppStoreConnectEnvVariables() (string, string) {
 
 func GetWalletBackendUrl() *string {
 	return &walletBackenUrl
+}
+
+func GetKartraValues() (string, string, string, string) {
+	return kartraAppId, kartraApiKey, kartraApiPassword, kartraApiBase
 }
