@@ -71,9 +71,9 @@ type WalletResponse struct {
 }
 
 type Wallet struct {
-	Address    string    `json:"address" bson:"address"`
-	KeyPackage string    `json:"key_package" bson:"key_package"`
-	Email      string    `json:"email" bson:"email"`
-	CreatedAt  time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at" bson:"updated_at"`
+	Address   string    `json:"address" bson:"address"`
+	Private   string    `json:"private" bson:"private"`
+	Email     string    `json:"email" bson:"email"`
+	CreatedAt time.Time `json:"created_at" bson:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 }

@@ -1,0 +1,12 @@
+FROM golang:latest
+WORKDIR /app
+
+COPY . .
+
+RUN go mod download && go mod verify
+
+RUN go install github.com/air-verse/air@latest
+
+EXPOSE 6050
+
+CMD "air"

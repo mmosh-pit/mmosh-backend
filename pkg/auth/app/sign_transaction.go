@@ -37,7 +37,7 @@ func SignTransaction(userId, message string) (*SignTransactionResponse, error) {
 
 	reqData := SignTransactionRequest{
 		Address: wallet.Address,
-		Key:     wallet.KeyPackage,
+		Key:     wallet.Private,
 		Message: message,
 	}
 

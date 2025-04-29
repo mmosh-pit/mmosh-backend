@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  backend-app:
+    container_name: backend_app
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./
+    volumes:
+      - ./:/app
+    ports:
+      - 6050:6050
+
+volumes:
+  app: null

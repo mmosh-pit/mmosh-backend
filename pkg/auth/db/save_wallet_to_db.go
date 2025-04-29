@@ -16,11 +16,11 @@ func SaveWalletToDb(email string, wallet *auth.WalletResponse) {
 	collection := client.Database(databaseName).Collection("mmosh-app-user-wallet")
 
 	data := auth.Wallet{
-		Address:    wallet.Address,
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
-		KeyPackage: wallet.KeyPackage[0],
-		Email:      email,
+		Address:   wallet.Address,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Private:   wallet.KeyPackage[0],
+		Email:     email,
 	}
 
 	_, err := collection.InsertOne(*ctx, data)
