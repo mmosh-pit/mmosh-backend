@@ -9,6 +9,7 @@ import (
 
 var ErrSomethingWentWrong = errors.New("Something Went Wrong")
 var ErrWalletAlreadyExists = errors.New("wallet-exists")
+var ErrUserAlreadyExists = errors.New("user-exists")
 
 type LoginParams struct {
 	Handle   string `json:"handle"`

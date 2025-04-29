@@ -17,6 +17,12 @@ type SignUpResponse struct {
 }
 
 func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
+	_, err := authDb.GetUserByEmail(params.Email)
+
+	if err == nil {
+		return nil, authDomain.ErrUserAlreadyExists
+	}
+
 	existingCode := authDb.GetTemporalCode(params.Code)
 
 	if existingCode == nil {

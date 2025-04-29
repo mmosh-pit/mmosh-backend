@@ -8,6 +8,7 @@ import (
 	"os"
 
 	authDb "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
+	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
@@ -17,6 +18,12 @@ type RequestCodeParams struct {
 }
 
 func RequestCode(email string) error {
+
+	_, err := authDb.GetUserByEmail(email)
+
+	if err == nil {
+		return auth.ErrUserAlreadyExists
+	}
 
 	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
 
