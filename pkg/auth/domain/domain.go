@@ -36,6 +36,7 @@ type User struct {
 	Sessions     []string            `bson:"sessions" json:"sessions"`
 	Bsky         BlueskyData         `bson:"bsky" json:"bsky"`
 	Subscription UserSubscription    `bson:"subscription" json:"subscription"`
+	Wallet       string              `json:"wallet" bson:"wallet"`
 }
 
 type UserSubscription struct {

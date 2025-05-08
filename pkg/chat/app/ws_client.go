@@ -59,7 +59,9 @@ func KeepWsAlive(c *PoolClient, timeout time.Duration) {
 
 	go func() {
 		for {
+			c.WriteMutex.Lock()
 			err := c.Conn.WriteMessage(websocket.PingMessage, []byte("ka"))
+			c.WriteMutex.Unlock()
 			if err != nil {
 				return
 			}

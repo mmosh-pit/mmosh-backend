@@ -18,12 +18,12 @@ type ResponseModel struct {
 	Data    string `json:"data"`
 }
 
-func CreateWallet(email string) error {
+func CreateWallet(email string) (string, error) {
 	wallet := authDb.GetWalletByEmail(email)
 
 	if wallet != nil {
 		log.Println("Already got wallet!!!")
-		return authDomain.ErrWalletAlreadyExists
+		return wallet.Address, authDomain.ErrWalletAlreadyExists
 	}
 
 	client := &http.Client{}
@@ -36,14 +36,14 @@ func CreateWallet(email string) error {
 
 	if err != nil {
 		log.Printf("Got error trying to create wallet on request: %v\n", err)
-		return err
+		return "", err
 	}
 
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		log.Printf("Got error reading wallet response: %v\n", err)
-		return err
+		return "", err
 	}
 
 	var response ResponseModel
@@ -52,11 +52,11 @@ func CreateWallet(email string) error {
 
 	if err != nil {
 		log.Printf("Got error decoding wallet response: %v\n", err)
-		return err
+		return "", err
 	}
 
 	if !response.Status {
-		return authDomain.ErrSomethingWentWrong
+		return "", authDomain.ErrSomethingWentWrong
 	}
 
 	var walletData authDomain.WalletResponse
@@ -65,10 +65,10 @@ func CreateWallet(email string) error {
 
 	if err != nil {
 		log.Printf("Got error on final decoding for wallet: %v\n", err)
-		return err
+		return "", err
 	}
 
 	authDb.SaveWalletToDb(email, &walletData)
 
-	return nil
+	return walletData.Address, nil
 }

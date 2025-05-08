@@ -41,7 +41,7 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 		return nil, err
 	}
 
-	err = CreateWallet(params.Email)
+	address, err := CreateWallet(params.Email)
 
 	if err != nil {
 		return nil, err
@@ -66,6 +66,7 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 		Sessions:   []string{*token},
 		ReferredBy: "",
 		UUID:       uuid.String(),
+		Wallet:     address,
 	}
 
 	err = authDb.CreateUser(user)

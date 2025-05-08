@@ -9,5 +9,5 @@ type Chat struct {
 	Owner        *primitive.ObjectID `bson:"owner" json:"owner"`
 	Agent        *ChatAgent          `bson:"chatAgent" json:"chatAgent"`
 	Deactivated  bool                `bson:"deactivated" json:"deactivated"`
-	LastMessage  Message             `bson:"lastMessage" json:"lastMessage"`
+	LastMessage  *Message            `bson:"lastMessage" json:"lastMessage,omitempty"`
 }

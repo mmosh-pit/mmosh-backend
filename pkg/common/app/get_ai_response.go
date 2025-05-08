@@ -4,8 +4,11 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 )
 
 func FetchAIResponse(username, text, systemPrompt string, namespaces []string) string {
@@ -23,7 +26,9 @@ func FetchAIResponse(username, text, systemPrompt string, namespaces []string) s
 		return ""
 	}
 
-	url := "https://mmoshapi-uodcouqmia-uc.a.run.app/generate/"
+	baseUrl := config.GetAIApiUrl()
+
+	url := fmt.Sprintf("%s/generate/", baseUrl)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(encoded))
 

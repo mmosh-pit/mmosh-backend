@@ -4,8 +4,11 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 )
 
 func FetchAIResponse(username, text, systemPrompt string, namespaces []string, callbackChan chan string) {
@@ -14,6 +17,7 @@ func FetchAIResponse(username, text, systemPrompt string, namespaces []string, c
 		"prompt":        text,
 		"namespaces":    namespaces,
 		"system_prompt": systemPrompt,
+		"model":         "gemini-2.0-flash",
 	}
 
 	encoded, err := json.Marshal(data)
@@ -24,7 +28,11 @@ func FetchAIResponse(username, text, systemPrompt string, namespaces []string, c
 		return
 	}
 
-	url := "https://mmoshapi-uodcouqmia-uc.a.run.app/generate_stream/"
+	baseUrl := config.GetAIApiUrl()
+
+	url := fmt.Sprintf("%s/generate_stream/", baseUrl)
+
+	log.Printf("Sending AI request with body: %v\n", string(encoded))
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(encoded))
 

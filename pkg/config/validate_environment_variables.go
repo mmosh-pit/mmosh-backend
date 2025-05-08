@@ -22,6 +22,8 @@ var (
 	kartraApiPassword string
 	kartraApiBase     string
 
+	aiApiUrl string
+
 	AppleAppStoreBundleId string
 	AppleAppStoreIssuer   string
 	AppleAppStoreSandbox  bool
@@ -164,6 +166,11 @@ func ValidateEnvironmentVariables(path string) {
 		panic("KARTRA_API_BASE is missing")
 	}
 
+	foundAiApiUrl, ok := os.LookupEnv("AI_API_URL")
+	if !ok {
+		panic("AI_API_URL is missing")
+	}
+
 	kartraAppId = foundKartraAppId
 	kartraApiKey = foundKartraApiKey
 	kartraApiPassword = foundKartraApiPassword
@@ -185,6 +192,7 @@ func ValidateEnvironmentVariables(path string) {
 	GoogleAppStoreBundleId = foundGoogleAppStoreBundleId
 
 	walletBackenUrl = foundWalletBackendUrl
+	aiApiUrl = foundAiApiUrl
 }
 
 func GetMongoURI() *string {
@@ -217,4 +225,8 @@ func GetWalletBackendUrl() *string {
 
 func GetKartraValues() (string, string, string, string) {
 	return kartraAppId, kartraApiKey, kartraApiPassword, kartraApiBase
+}
+
+func GetAIApiUrl() string {
+	return aiApiUrl
 }

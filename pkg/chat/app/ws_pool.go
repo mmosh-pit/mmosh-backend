@@ -113,20 +113,15 @@ func Start() {
 
 			id := primitive.NewObjectID()
 
-			log.Println("1")
-
 			userId, _ := primitive.ObjectIDFromHex(message.UserId)
-			log.Println("2")
 
 			agentId, err := primitive.ObjectIDFromHex(message.AgentId)
-			log.Println("3")
 
 			resultingId := &agentId
 
 			if err != nil {
 				resultingId = nil
 			}
-			log.Println("4")
 
 			chatId, err := primitive.ObjectIDFromHex(message.ChatId)
 
@@ -134,7 +129,6 @@ func Start() {
 				log.Printf("Invalid chat object ID: %v, %v\n", message.ChatId, err)
 				break
 			}
-			log.Println("5")
 
 			messageData := chat.Message{
 				ID:           &id,
@@ -165,7 +159,7 @@ func Start() {
 }
 
 func (p *PoolClient) sendResponse(message interface{}) {
-	log.Printf("Gonna send message: %v\n", message)
+	log.Printf("Sending response back to client: %v\n", message)
 	p.WriteMutex.Lock()
 	defer p.WriteMutex.Unlock()
 	err := p.Conn.WriteJSON(message)

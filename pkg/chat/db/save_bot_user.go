@@ -16,7 +16,7 @@ func SaveBotUser(user *chat.Participant) error {
 	_, err := collection.InsertOne(*ctx, user)
 
 	if err != nil {
-		log.Printf("Error trying to save bot participants")
+		log.Printf("Error trying to save bot participants: %v\n", err)
 		return err
 	}
 
