@@ -159,7 +159,6 @@ func Start() {
 }
 
 func (p *PoolClient) sendResponse(message interface{}) {
-	log.Printf("Sending response back to client: %v\n", message)
 	p.WriteMutex.Lock()
 	defer p.WriteMutex.Unlock()
 	err := p.Conn.WriteJSON(message)

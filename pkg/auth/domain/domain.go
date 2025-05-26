@@ -10,6 +10,11 @@ import (
 var ErrSomethingWentWrong = errors.New("Something Went Wrong")
 var ErrWalletAlreadyExists = errors.New("wallet-exists")
 var ErrUserAlreadyExists = errors.New("user-exists")
+var ErrDataAlreadyExists = errors.New("data-already-exists")
+
+type OnboardingStepParams struct {
+	Step int `json:"step"`
+}
 
 type LoginParams struct {
 	Handle   string `json:"handle"`
@@ -23,20 +28,35 @@ type SignUpParams struct {
 	Code     int    `json:"code"`
 }
 
+type GuestUserData struct {
+	Picture  string `json:"picture"`
+	Banner   string `jsos:"banner"`
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Website  string `json:"website"`
+	Pronouns string `json:"pronouns"`
+	Bio      string `json:"bio"`
+}
+
+type AddReferrerParams struct {
+	User string `json:"user"`
+}
+
 type User struct {
-	ID           *primitive.ObjectID `json:"ID" bson:"_id,omitempty"`
-	UUID         string              `json:"uuid" bson:"uuid"`
-	Name         string              `bson:"name" json:"name"`
-	Email        string              `bson:"email" json:"email"`
-	Password     string              `bson:"password" json:"password"`
-	Address      string              `bson:"address" json:"address"`
-	ReferredBy   string              `bson:"referredBy" json:"referredBy"`
-	TelegramId   int                 `bson:"telegramId" json:"telegramId"`
-	PrivateKey   string              `bson:"privateKey" json:"privateKey"`
-	Sessions     []string            `bson:"sessions" json:"sessions"`
-	Bsky         BlueskyData         `bson:"bsky" json:"bsky"`
-	Subscription UserSubscription    `bson:"subscription" json:"subscription"`
-	Wallet       string              `json:"wallet" bson:"wallet"`
+	ID             *primitive.ObjectID `json:"ID" bson:"_id,omitempty"`
+	UUID           string              `json:"uuid" bson:"uuid"`
+	Name           string              `bson:"name" json:"name"`
+	Email          string              `bson:"email" json:"email"`
+	Password       string              `bson:"password" json:"password"`
+	TelegramId     int                 `bson:"telegramId" json:"telegramId"`
+	GuestData      GuestUserData       `bson:"guest_data" json:"guest_data"`
+	Sessions       []string            `bson:"sessions" json:"sessions"`
+	Bsky           BlueskyData         `bson:"bsky" json:"bsky"`
+	Subscription   UserSubscription    `bson:"subscription" json:"subscription"`
+	Wallet         string              `json:"wallet" bson:"wallet"`
+	ReferredBy     string              `json:"referred_by" bson:"referred_by"`
+	OnboardingStep int                 `json:"onboarding_step" bson:"onboarding_step"`
+	CreatedAt      time.Time           `bson:"created_at"`
 }
 
 type UserSubscription struct {

@@ -52,6 +52,10 @@ var routes = []route{
 	newRoute("POST", "/posts", postsHttp.CreatePostHandler, true, false),
 	newRoute("GET", "/posts/author", postsHttp.HandlePostsByAuthor, true, false),
 	newRoute("GET", "/posts/slug", postsHttp.HandlePostBySlug, true, false),
+
+	newRoute("PUT", "/guest-data", authHttp.CreateGuestUserDataHandler, true, false),
+	newRoute("PUT", "/referred", authHttp.AddReferredToUserHandler, true, false),
+	newRoute("PUT", "/onboarding-step", authHttp.SetOnboardingStepHandler, true, false),
 }
 
 type route struct {

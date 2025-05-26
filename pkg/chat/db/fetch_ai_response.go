@@ -32,7 +32,7 @@ func FetchAIResponse(username, text, systemPrompt string, namespaces []string, c
 
 	url := fmt.Sprintf("%s/generate_stream/", baseUrl)
 
-	log.Printf("Sending AI request with body: %v\n", string(encoded))
+	log.Printf("Sending request to URL: %s\n", url)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(encoded))
 
@@ -60,6 +60,8 @@ func FetchAIResponse(username, text, systemPrompt string, namespaces []string, c
 
 		if err != nil {
 
+			log.Printf("Got info to send to client: %s\n", line)
+
 			if len(line) > 0 {
 				callbackChan <- string(line)
 			}
@@ -70,4 +72,33 @@ func FetchAIResponse(username, text, systemPrompt string, namespaces []string, c
 
 		callbackChan <- string(line)
 	}
+
+	///
+
+	// scanner := bufio.NewScanner(resp.Body)
+	// for scanner.Scan() {
+	// 	line := scanner.Text() // Or scanner.Bytes()
+	// 	fmt.Printf("Received: %s\n", line)
+	// 	callbackChan <- line
+	//
+	// 	// Here you would process the received line (e.g., parse JSON, handle event data)
+	// 	// Example: if line is "event: message", "data: { ... }" for SSE
+	// }
+	//
+	// if err := scanner.Err(); err != nil {
+	// 	// An error occurred during scanning, other than io.EOF
+	// 	// This could be a network error or the connection being closed unexpectedly.
+	// 	if err == io.EOF {
+	// 		log.Println("Stream closed by server (EOF).")
+	// 		callbackChan <- "____break____"
+	// 	} else {
+	// 		log.Printf("Error reading stream: %v", err)
+	// 		callbackChan <- "____break____"
+	// 	}
+	// } else {
+	// 	// scanner.Scan() returned false and scanner.Err() is nil,
+	// 	// which usually means io.EOF was encountered cleanly.
+	// 	log.Println("Stream finished.")
+	// 	callbackChan <- "____break____"
+	// }
 }
