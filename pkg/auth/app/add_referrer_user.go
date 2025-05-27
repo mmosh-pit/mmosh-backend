@@ -16,7 +16,7 @@ func AddReferrerUser(data authDomain.AddReferrerParams, userId string) error {
 		return authDomain.ErrSomethingWentWrong
 	}
 
-	_, err = auth.GetUserByHandle(data.User)
+	_, err = auth.GetReferredUser(data.User)
 
 	if err != nil {
 		return err
