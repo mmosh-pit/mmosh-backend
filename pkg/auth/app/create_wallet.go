@@ -6,10 +6,13 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 
 	authDb "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
 	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
 type ResponseModel struct {
@@ -19,10 +22,11 @@ type ResponseModel struct {
 }
 
 func CreateWallet(email string) (string, error) {
+	mailClient := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
+
 	wallet := authDb.GetWalletByEmail(email)
 
 	if wallet != nil {
-		log.Println("Already got wallet!!!")
 		return wallet.Address, authDomain.ErrWalletAlreadyExists
 	}
 
@@ -67,6 +71,23 @@ func CreateWallet(email string) (string, error) {
 		log.Printf("Got error on final decoding for wallet: %v\n", err)
 		return "", err
 	}
+
+	mailKeyPair := walletData.KeyPackage[1]
+
+	from := mail.NewEmail("Kinship Bots", "support@liquidhearts.club")
+	subject := "Kinship Wallet Key Pair"
+	to := mail.NewEmail("", email)
+	htmlContent := fmt.Sprintf("Here's your Kinship wallet keypair, save it in a safe place in case you need to recover your Kinship Wallet<br /><br /> <strong>%s</strong>", mailKeyPair)
+	message := mail.NewSingleEmail(from, subject, to, "", htmlContent)
+	res, err := mailClient.Send(message)
+
+	if err != nil {
+		log.Printf("Error trying to send keypair to email: %v\n", err)
+		log.Printf("Wallet: %v\n", mailKeyPair)
+		authDb.SaveFailedEmailAttemptsKeypairs(email, mailKeyPair)
+	}
+
+	log.Printf("Send wallet keypair result: %v\n", res)
 
 	authDb.SaveWalletToDb(email, &walletData)
 

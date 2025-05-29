@@ -9,7 +9,6 @@ import (
 )
 
 func SaveWalletToDb(email string, wallet *auth.WalletResponse) {
-	log.Println("Saving wallet...")
 	client, ctx := config.GetMongoClient()
 	databaseName := config.GetDatabaseName()
 
