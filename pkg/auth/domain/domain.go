@@ -29,13 +29,15 @@ type SignUpParams struct {
 }
 
 type GuestUserData struct {
-	Picture  string `json:"picture"`
-	Banner   string `jsos:"banner"`
-	Name     string `json:"name"`
-	Username string `json:"username"`
-	Website  string `json:"website"`
-	Pronouns string `json:"pronouns"`
-	Bio      string `json:"bio"`
+	Picture     string `json:"picture"`
+	Banner      string `jsos:"banner"`
+	Name        string `json:"name"`
+	DisplayName string `json:"displayName"`
+	LastName    string `json:"lastName"`
+	Username    string `json:"username"`
+	Website     string `json:"website"`
+	Pronouns    string `json:"pronouns"`
+	Bio         string `json:"bio"`
 }
 
 type AddReferrerParams struct {

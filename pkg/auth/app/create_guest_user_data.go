@@ -14,21 +14,13 @@ func CreateGuestUserData(data authDomain.GuestUserData, userId string) error {
 		return authDomain.ErrSomethingWentWrong
 	}
 
-	existingData := authDb.GetUserGuestData(&userIdBson)
-
-	if existingData != nil {
-		if existingData.Name != "" {
-			return authDomain.ErrDataAlreadyExists
-		}
-	}
-
 	err = authDb.AddUserGuestData(data, &userIdBson)
 
 	if err != nil {
 		return authDomain.ErrSomethingWentWrong
 	}
 
-	authDb.UpdateUserOnboardingStatus(&userIdBson, 1)
+	authDb.UpdateUserOnboardingStatus(&userIdBson, 4)
 
 	return nil
 }

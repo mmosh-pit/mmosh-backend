@@ -22,6 +22,7 @@ func CreateGuestUserDataHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 
 	if err != nil {
+		log.Printf("Error receiving payload: %v\n", err)
 		common.SendErrorResponse(w, http.StatusBadRequest, []string{"invalid payload"})
 		return
 	}
@@ -39,11 +40,9 @@ func CreateGuestUserDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		switch err {
-		case authDomain.ErrDataAlreadyExists:
-			common.SendErrorResponse(w, http.StatusBadRequest, []string{err.Error()})
-			return
 		default:
 			common.SendErrorResponse(w, http.StatusInternalServerError, []string{err.Error()})
+			return
 		}
 	}
 

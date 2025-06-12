@@ -35,7 +35,7 @@ func RequestCode(email string) error {
 		from := mail.NewEmail("Kinship Bots", "support@liquidhearts.club")
 		subject := "Verification Code"
 		to := mail.NewEmail("", email)
-		htmlContent := fmt.Sprintf("Hey there!<br /> Here's your code to verify your Email and finish your registration into Liquid Hearts Club!<br /> <strong>%d</strong>", code)
+		htmlContent := fmt.Sprintf("Hey there!<br /> Here's your code to verify your Email and finish your registration into Kinship Bots!<br /> <strong>%d</strong>", code)
 		message := mail.NewSingleEmail(from, subject, to, "", htmlContent)
 		_, err := client.Send(message)
 		if err != nil {

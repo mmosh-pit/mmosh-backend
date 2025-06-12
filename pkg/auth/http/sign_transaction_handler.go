@@ -36,8 +36,6 @@ func SignTransactionHandler(w http.ResponseWriter, r *http.Request) {
 
 	res, err := auth.SignTransaction(userId, data.Message)
 
-	log.Printf("Returning data here on sign: %v\n", res)
-
 	if err != nil {
 		log.Printf("Got error: %v\n", err)
 		common.SendErrorResponse(w, http.StatusInternalServerError, []string{"something-went-wrong"})

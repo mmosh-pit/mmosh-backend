@@ -49,8 +49,6 @@ func SignTransaction(userId, message string) (*SignTransactionResponse, error) {
 
 	client := &http.Client{}
 
-	log.Printf("Gonna send data: %v\n", string(encoded))
-
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/sign", *baseUrl), bytes.NewBuffer(encoded))
 
 	req.Header.Set("Content-Type", "application/json")
@@ -82,8 +80,6 @@ func SignTransaction(userId, message string) (*SignTransactionResponse, error) {
 		log.Printf("Got error unmarshalling? %s, %v\n", string(body), err)
 		return nil, err
 	}
-
-	log.Printf("Got response from API: %v\n", response.Data)
 
 	if !response.Status {
 		return nil, authDomain.ErrSomethingWentWrong
