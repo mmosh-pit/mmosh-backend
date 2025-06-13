@@ -74,7 +74,7 @@ func CreateWallet(email string) (string, error) {
 
 	mailKeyPair := walletData.KeyPackage[1]
 
-	from := mail.NewEmail("Kinship Bots", "support@liquidhearts.club")
+	from := mail.NewEmail("Kinship Bots", "security@kinshipbots.com")
 	subject := "Kinship Wallet Key Pair"
 	to := mail.NewEmail("", email)
 	htmlContent := fmt.Sprintf("Here's your Kinship wallet keypair, save it in a safe place in case you need to recover your Kinship Wallet<br /><br /> <strong>%s</strong>", mailKeyPair)

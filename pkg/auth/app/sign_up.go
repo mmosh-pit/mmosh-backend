@@ -83,7 +83,7 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 		User:  user,
 	}
 
-	chatDb.CreateChat(user)
+	chatDb.SetDefaultChat(user)
 
 	go commonApp.SendKartraNotification("Kinship_Bots_Sign_Up", params.Name, params.Email)
 

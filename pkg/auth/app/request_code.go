@@ -32,7 +32,7 @@ func RequestCode(email string) error {
 	existingCode := authDb.GetTemporalCode(code)
 
 	if existingCode == nil {
-		from := mail.NewEmail("Kinship Bots", "support@liquidhearts.club")
+		from := mail.NewEmail("Kinship Bots", "security@kinshipbots.com")
 		subject := "Verification Code"
 		to := mail.NewEmail("", email)
 		htmlContent := fmt.Sprintf("Hey there!<br /> Here's your code to verify your Email and finish your registration into Kinship Bots!<br /> <strong>%d</strong>", code)

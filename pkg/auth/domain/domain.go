@@ -59,6 +59,29 @@ type User struct {
 	ReferredBy     string              `json:"referred_by" bson:"referred_by"`
 	OnboardingStep int                 `json:"onboarding_step" bson:"onboarding_step"`
 	CreatedAt      time.Time           `bson:"created_at"`
+	Profile        Profile             `json:"profile" bson:"profile"`
+}
+
+type Profile struct {
+	Name            string `json:"name" bson:"name"`
+	LastName        string `json:"lastName" bson:"lastName"`
+	DisplayName     string `json:"displayName" bson:"displayName"`
+	Username        string `json:"username" bson:"username"`
+	Bio             string `json:"bio" bson:"bio"`
+	Image           string `json:"image" bson:"image"`
+	Pronouns        string `json:"pronouns" bson:"pronouns"`
+	Seniority       int    `json:"seniority" bson:"seniority"`
+	Descriptor      string `json:"descriptor" bson:"descriptor"`
+	Symbol          string `json:"symbol" bson:"symbol"`
+	Nouns           string `json:"nouns" bson:"nouns"`
+	Link            string `json:"link" bson:"link"`
+	Following       int    `json:"following" bson:"following"`
+	Follower        int    `json:"follower" bson:"follower"`
+	ConnectionNFT   string `json:"connectionnft" bson:"connectionnft"`
+	ConnectionBadge string `json:"connectionbadge" bson:"connectionbadge"`
+	Connection      int    `json:"connection" bson:"connection"`
+	IsPrivate       bool   `json:"isprivate" bson:"isprivate"`
+	Request         bool   `json:"request" bson:"request"`
 }
 
 type UserSubscription struct {
