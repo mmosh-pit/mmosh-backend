@@ -7,11 +7,10 @@ import (
 	"net/http"
 
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/app"
-	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
 )
 
-func CreateGuestUserDataHandler(w http.ResponseWriter, r *http.Request) {
+func UpdateProfileDataHandler(w http.ResponseWriter, r *http.Request) {
 	userId := r.Header.Get("userId")
 
 	if userId == "" {
@@ -20,31 +19,25 @@ func CreateGuestUserDataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	body, err := io.ReadAll(r.Body)
-
 	if err != nil {
-		log.Printf("Error receiving payload: %v\n", err)
+		log.Printf("error reading payload: %v", err)
 		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
-	var params authDomain.GuestUserData
-
-	err = json.Unmarshal(body, &params)
+	var data auth.UpdateProfileDataParams
+	err = json.Unmarshal(body, &data)
 	if err != nil {
-		log.Printf("error decoding payload on create guest user data: %v", err)
+		log.Printf("error decoding payload on signup: %v", err)
 		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
-	err = auth.CreateGuestUserData(params, userId)
+	err = auth.UpdateProfileData(data, userId)
 
 	if err != nil {
-		switch err {
-		default:
-			common.SendErrorResponse(w, http.StatusInternalServerError, err.Error())
-			return
-		}
+		log.Printf("error updating profile data: %v", err)
+		common.SendErrorResponse(w, http.StatusInternalServerError, err.Error())
+		return
 	}
-
-	common.SendSuccessResponse(w, http.StatusOK, nil)
 }

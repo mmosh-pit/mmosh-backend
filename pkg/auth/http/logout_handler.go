@@ -19,7 +19,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	err := authApp.Logout(userId, token)
 	if err != nil {
 		log.Printf("error logout: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{err.Error()})
+		common.SendErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 

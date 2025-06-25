@@ -3,8 +3,8 @@ package chat
 import (
 	"log"
 
-	agents "github.com/mmosh-pit/mmosh_backend/pkg/agents/domain"
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
+	agents "github.com/mmosh-pit/mmosh_backend/pkg/bots/domain"
 	chat "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,7 +21,7 @@ func SetDefaultChat(user *auth.User) {
 	projectCollection := database.Collection("mmosh-app-project")
 	chatCollection := database.Collection("chats")
 
-	var defaultBot agents.Agent
+	var defaultBot agents.Bot
 
 	err := projectCollection.FindOne(*ctx, bson.D{{
 		Key:   "symbol",

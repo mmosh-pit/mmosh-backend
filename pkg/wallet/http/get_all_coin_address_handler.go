@@ -11,14 +11,14 @@ func GetAllCoinAddressHandler(w http.ResponseWriter, r *http.Request) {
 	userId := r.Header.Get("userId")
 
 	if userId == "" {
-		common.SendErrorResponse(w, http.StatusUnauthorized, nil)
+		common.SendErrorResponse(w, http.StatusUnauthorized, "")
 		return
 	}
 
 	response, err := wallet.GetAllCoinAddresses()
 
 	if err != nil {
-		common.SendErrorResponse(w, http.StatusInternalServerError, nil)
+		common.SendErrorResponse(w, http.StatusInternalServerError, "")
 		return
 	}
 

@@ -15,14 +15,14 @@ func SetOnboardingStepHandler(w http.ResponseWriter, r *http.Request) {
 	userId := r.Header.Get("userId")
 
 	if userId == "" {
-		common.SendErrorResponse(w, http.StatusUnauthorized, nil)
+		common.SendErrorResponse(w, http.StatusUnauthorized, "")
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 
 	if err != nil {
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"invalid payload"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
@@ -31,7 +31,7 @@ func SetOnboardingStepHandler(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &params)
 	if err != nil {
 		log.Printf("error decoding payload on create guest user data: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"invalid payload"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 

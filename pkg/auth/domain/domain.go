@@ -11,6 +11,7 @@ var ErrSomethingWentWrong = errors.New("Something Went Wrong")
 var ErrWalletAlreadyExists = errors.New("wallet-exists")
 var ErrUserAlreadyExists = errors.New("user-exists")
 var ErrDataAlreadyExists = errors.New("data-already-exists")
+var ErrInvalidBluesky = errors.New("invalid-bluesky")
 
 type OnboardingStepParams struct {
 	Step int `json:"step"`
@@ -53,13 +54,14 @@ type User struct {
 	TelegramId     int                 `bson:"telegramId" json:"telegramId"`
 	GuestData      GuestUserData       `bson:"guest_data" json:"guest_data"`
 	Sessions       []string            `bson:"sessions" json:"sessions"`
-	Bsky           BlueskyData         `bson:"bsky" json:"bsky"`
+	Bluesky        BlueskyUserData     `bson:"bluesky" json:"bluesky"`
 	Subscription   UserSubscription    `bson:"subscription" json:"subscription"`
 	Wallet         string              `json:"wallet" bson:"wallet"`
 	ReferredBy     string              `json:"referred_by" bson:"referred_by"`
 	OnboardingStep int                 `json:"onboarding_step" bson:"onboarding_step"`
 	CreatedAt      time.Time           `bson:"created_at"`
 	Profile        Profile             `json:"profile" bson:"profile"`
+	ProfileNFT     string              `json:"profilenft" bson:"profilenft"`
 }
 
 type Profile struct {
@@ -69,11 +71,8 @@ type Profile struct {
 	Username        string `json:"username" bson:"username"`
 	Bio             string `json:"bio" bson:"bio"`
 	Image           string `json:"image" bson:"image"`
-	Pronouns        string `json:"pronouns" bson:"pronouns"`
 	Seniority       int    `json:"seniority" bson:"seniority"`
-	Descriptor      string `json:"descriptor" bson:"descriptor"`
 	Symbol          string `json:"symbol" bson:"symbol"`
-	Nouns           string `json:"nouns" bson:"nouns"`
 	Link            string `json:"link" bson:"link"`
 	Following       int    `json:"following" bson:"following"`
 	Follower        int    `json:"follower" bson:"follower"`
@@ -92,6 +91,17 @@ type UserSubscription struct {
 	ExpiresAt        int64  `bson:"expires_at" json:"expires_at"`
 	Platform         string `bson:"platform" json:"platform"`
 	ChangedPlan      bool   `bson:"changed_plan" json:"changed_plan"`
+}
+
+type BlueskyUserData struct {
+	Handle   string `bson:"handle" json:"handle"`
+	Password string `bson:"password" json:"password"`
+}
+
+type TelegramUserData struct {
+	Id        int    `bson:"id" json:"id"`
+	FirstName string `bson:"firstName" json:"firstName"`
+	Username  string `bson:"username" json:"username"`
 }
 
 type BlueskyData struct {

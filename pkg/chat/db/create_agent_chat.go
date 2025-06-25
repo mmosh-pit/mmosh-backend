@@ -3,14 +3,14 @@ package chat
 import (
 	"log"
 
-	agentsDomain "github.com/mmosh-pit/mmosh_backend/pkg/agents/domain"
+	agentsDomain "github.com/mmosh-pit/mmosh_backend/pkg/bots/domain"
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateAgentChat(ownerId *primitive.ObjectID, user *auth.User, agent *agentsDomain.Agent) *chatDomain.Chat {
+func CreateAgentChat(ownerId *primitive.ObjectID, user *auth.User, agent *agentsDomain.Bot) *chatDomain.Chat {
 	client, ctx := config.GetMongoClient()
 	databaseName := config.GetDatabaseName()
 

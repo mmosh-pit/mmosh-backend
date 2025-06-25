@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func SendJSONResponse(w http.ResponseWriter, code int, payload interface{}) {
+func SendJSONResponse(w http.ResponseWriter, code int, payload any) {
 	if payload == nil {
 		w.WriteHeader(code)
 		return
@@ -23,10 +23,10 @@ func SendJSONResponse(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
-func SendErrorResponse(w http.ResponseWriter, code int, errors []string) {
-	SendJSONResponse(w, code, map[string]interface{}{"errors": errors})
+func SendErrorResponse(w http.ResponseWriter, code int, errors string) {
+	SendJSONResponse(w, code, map[string]any{"error": errors})
 }
 
-func SendSuccessResponse(w http.ResponseWriter, code int, payload interface{}) {
-	SendJSONResponse(w, code, map[string]interface{}{"data": payload})
+func SendSuccessResponse(w http.ResponseWriter, code int, payload any) {
+	SendJSONResponse(w, code, map[string]any{"data": payload})
 }

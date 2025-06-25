@@ -14,7 +14,7 @@ func RequestCodeHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("error reading payload: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"invalid payload"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
@@ -23,14 +23,14 @@ func RequestCodeHandler(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		log.Printf("error decoding payload on request code: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"invalid payload"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
 	err = authApp.RequestCode(data.Email)
 	if err != nil {
 		log.Printf("error request code: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{err.Error()})
+		common.SendErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 

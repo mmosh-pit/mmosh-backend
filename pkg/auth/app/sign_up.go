@@ -61,12 +61,15 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 		ID:         &id,
 		Name:       params.Name,
 		Email:      params.Email,
-		Bsky:       authDomain.BlueskyData{},
 		Password:   password,
 		Sessions:   []string{*token},
 		ReferredBy: "",
 		UUID:       uuid.String(),
 		Wallet:     address,
+		GuestData: authDomain.GuestUserData{
+			Picture: "https://storage.googleapis.com/mmosh-assets/default.png",
+			Name:    params.Name,
+		},
 	}
 
 	err = authDb.CreateUser(user)

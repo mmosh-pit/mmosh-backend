@@ -14,14 +14,14 @@ func SignTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	userId := r.Header.Get("userId")
 
 	if userId == "" {
-		common.SendErrorResponse(w, http.StatusUnauthorized, nil)
+		common.SendErrorResponse(w, http.StatusUnauthorized, "")
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("error reading payload: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"invalid payload"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
@@ -30,7 +30,7 @@ func SignTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		log.Printf("error decoding payload on signup: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"invalid payload"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
@@ -38,7 +38,7 @@ func SignTransactionHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Printf("Got error: %v\n", err)
-		common.SendErrorResponse(w, http.StatusInternalServerError, []string{"something-went-wrong"})
+		common.SendErrorResponse(w, http.StatusInternalServerError, "something-went-wrong")
 		return
 	}
 

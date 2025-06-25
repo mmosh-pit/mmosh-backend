@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -11,7 +12,7 @@ import (
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
 )
 
-func CreateGuestUserDataHandler(w http.ResponseWriter, r *http.Request) {
+func AddBlueskyHandler(w http.ResponseWriter, r *http.Request) {
 	userId := r.Header.Get("userId")
 
 	if userId == "" {
@@ -20,31 +21,31 @@ func CreateGuestUserDataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	body, err := io.ReadAll(r.Body)
-
 	if err != nil {
-		log.Printf("Error receiving payload: %v\n", err)
+		log.Printf("error reading payload: %v", err)
 		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
-	var params authDomain.GuestUserData
-
-	err = json.Unmarshal(body, &params)
+	var data authDomain.BlueskyUserData
+	err = json.Unmarshal(body, &data)
 	if err != nil {
-		log.Printf("error decoding payload on create guest user data: %v", err)
+		log.Printf("error decoding payload on bluesky: %v", err)
 		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
-	err = auth.CreateGuestUserData(params, userId)
+	err = auth.AddBlueskyData(data, userId)
 
 	if err != nil {
-		switch err {
+		switch {
+		case errors.Is(err, authDomain.ErrInvalidBluesky):
+			common.SendErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
 		default:
 			common.SendErrorResponse(w, http.StatusInternalServerError, err.Error())
-			return
 		}
 	}
 
-	common.SendSuccessResponse(w, http.StatusOK, nil)
+	common.SendSuccessResponse(w, http.StatusCreated, nil)
 }

@@ -12,7 +12,7 @@ func GetSubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
 	userId := r.Header.Get("userId")
 
 	if userId == "" {
-		common.SendErrorResponse(w, http.StatusUnauthorized, nil)
+		common.SendErrorResponse(w, http.StatusUnauthorized, "")
 		return
 	}
 
@@ -20,7 +20,7 @@ func GetSubscriptionsHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Printf("Error while retrieving subscriptions: %v\n", err)
-		common.SendErrorResponse(w, http.StatusInternalServerError, []string{"Something went wrong"})
+		common.SendErrorResponse(w, http.StatusInternalServerError, "Something went wrong")
 		return
 	}
 

@@ -16,14 +16,14 @@ func AddReferredToUserHandler(w http.ResponseWriter, r *http.Request) {
 	userId := r.Header.Get("userId")
 
 	if userId == "" {
-		common.SendErrorResponse(w, http.StatusUnauthorized, nil)
+		common.SendErrorResponse(w, http.StatusUnauthorized, "")
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 
 	if err != nil {
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"invalid payload"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
@@ -32,7 +32,7 @@ func AddReferredToUserHandler(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &params)
 	if err != nil {
 		log.Printf("error decoding payload on adding referrer to user: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"invalid payload"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
@@ -41,9 +41,9 @@ func AddReferredToUserHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case commonDomain.UserNotExistsErr:
-			common.SendErrorResponse(w, http.StatusBadRequest, []string{err.Error()})
+			common.SendErrorResponse(w, http.StatusBadRequest, err.Error())
 		default:
-			common.SendErrorResponse(w, http.StatusInternalServerError, []string{err.Error()})
+			common.SendErrorResponse(w, http.StatusInternalServerError, err.Error())
 		}
 	}
 

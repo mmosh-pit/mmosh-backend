@@ -5,10 +5,11 @@ import (
 	"regexp"
 	"strings"
 
-	agentsHttp "github.com/mmosh-pit/mmosh_backend/pkg/agents/http"
+	aiHttp "github.com/mmosh-pit/mmosh_backend/pkg/ai/http"
 	appleHttp "github.com/mmosh-pit/mmosh_backend/pkg/apple/http"
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/app"
 	authHttp "github.com/mmosh-pit/mmosh_backend/pkg/auth/http"
+	botsHttp "github.com/mmosh-pit/mmosh_backend/pkg/bots/http"
 	chatHttp "github.com/mmosh-pit/mmosh_backend/pkg/chat/http"
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
 	googleHttp "github.com/mmosh-pit/mmosh_backend/pkg/google/http"
@@ -31,17 +32,15 @@ var routes = []route{
 	newRoute("GET", "/is-auth", authHttp.IsAuthHandler, true, false),
 	newRoute("DELETE", "/logout", authHttp.LogoutHandler, true, false),
 
-	newRoute("GET", "/agents", agentsHttp.GetAgentsHandler, false, false),
-	newRoute("POST", "/agents/activate", agentsHttp.ToggleActivateHandler, true, false),
-	newRoute("POST", "/agents/create", agentsHttp.CreateAgentHandler, true, false),
-	newRoute("GET", "/agents/active", agentsHttp.GetActiveAgentsHandler, true, false),
+	newRoute("GET", "/agents", botsHttp.GetAgentsHandler, false, false),
+	newRoute("POST", "/agents/activate", botsHttp.ToggleActivateHandler, true, false),
+	newRoute("GET", "/agents/active", botsHttp.GetActiveAgentsHandler, true, false),
 
 	newRoute("GET", "/chat", chatHttp.WsHandler, true, true),
 	newRoute("GET", "/chats/active", chatHttp.GetActiveChatsHandler, true, false),
 
 	newRoute("GET", "/all-tokens", walletHttp.GetAllCoinAddressHandler, true, false),
 	newRoute("POST", "/mail", mailHttp.IncomingEmailHandler, false, false),
-	newRoute("GET", "/private-key", authHttp.GetPrivateKeyHandler, true, false),
 
 	newRoute("POST", "/google-notifications", googleHttp.WebhookHandler, false, false),
 	newRoute("POST", "/apple-notifications/v2", appleHttp.WebhookHandler, false, false),
@@ -56,6 +55,19 @@ var routes = []route{
 	newRoute("PUT", "/guest-data", authHttp.CreateGuestUserDataHandler, true, false),
 	newRoute("PUT", "/referred", authHttp.AddReferredToUserHandler, true, false),
 	newRoute("PUT", "/onboarding-step", authHttp.SetOnboardingStepHandler, true, false),
+
+	newRoute("GET", "/my-bots", botsHttp.GetMyBotsHandler, true, false),
+	newRoute("POST", "/bots", botsHttp.CreateBotHandler, true, false),
+
+	newRoute("PUT", "/update-profile-data", authHttp.UpdateProfileDataHandler, true, false),
+
+	newRoute("GET", "/ai/realtime-token", aiHttp.GetRealtimeTokenHandler, true, false),
+
+	newRoute("POST", "/bluesky", authHttp.AddBlueskyHandler, true, false),
+	newRoute("DELETE", "/bluesky", authHttp.DeleteBlueskyHandler, true, false),
+
+	newRoute("POST", "/telegram", authHttp.AddTelegramHandler, true, false),
+	newRoute("DELETE", "/telegram", authHttp.DeleteTelegramHandler, true, false),
 }
 
 type route struct {
@@ -140,17 +152,17 @@ func serve(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(invalidAuthentication) > 0 {
-		common.SendErrorResponse(w, http.StatusUnauthorized, []string{"user_unauthorized"})
+		common.SendErrorResponse(w, http.StatusUnauthorized, "user_unauthorized")
 		return
 	}
 
 	if len(invalidPayload) > 0 {
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"invalid_payload"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "invalid_payload")
 		return
 	}
 
 	if len(allow) > 0 {
-		common.SendErrorResponse(w, http.StatusMethodNotAllowed, nil)
+		common.SendErrorResponse(w, http.StatusMethodNotAllowed, "")
 		return
 	}
 

@@ -12,14 +12,14 @@ func IsAuthHandler(w http.ResponseWriter, r *http.Request) {
 	userId := r.Header.Get("userId")
 
 	if userId == "" {
-		common.SendErrorResponse(w, http.StatusUnauthorized, nil)
+		common.SendErrorResponse(w, http.StatusUnauthorized, "")
 		return
 	}
 
 	response, err := authApp.RetrieveUserById(userId)
 	if err != nil {
 		log.Printf("Error checking if is authenticated: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{err.Error()})
+		common.SendErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 

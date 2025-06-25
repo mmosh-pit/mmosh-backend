@@ -1,15 +1,15 @@
-package chat
+package bots
 
 import (
 	"errors"
 	"net/http"
 
-	chatApp "github.com/mmosh-pit/mmosh_backend/pkg/chat/app"
-	commonDomain "github.com/mmosh-pit/mmosh_backend/pkg/common/domain"
+	agentsApp "github.com/mmosh-pit/mmosh_backend/pkg/bots/app"
+	agentsDomain "github.com/mmosh-pit/mmosh_backend/pkg/bots/domain"
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
 )
 
-func GetActiveChatsHandler(w http.ResponseWriter, r *http.Request) {
+func GetActiveAgentsHandler(w http.ResponseWriter, r *http.Request) {
 	userId := r.Header.Get("userId")
 
 	if userId == "" {
@@ -17,18 +17,19 @@ func GetActiveChatsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := chatApp.GetActiveChats(userId)
+	agents, err := agentsApp.GetActiveAgents(userId)
 
 	if err != nil {
 		switch {
-		case errors.Is(err, commonDomain.UserNotExistsErr):
+		case errors.Is(err, agentsDomain.ErrUserNotFound):
 			common.SendErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
+
 		default:
 			common.SendErrorResponse(w, http.StatusInternalServerError, "something-went-wrong")
 			return
 		}
 	}
 
-	common.SendSuccessResponse(w, http.StatusOK, response)
+	common.SendSuccessResponse(w, http.StatusOK, agents)
 }

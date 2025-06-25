@@ -14,7 +14,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	userId := r.Header.Get("userId")
 
 	if userId == "" {
-		common.SendErrorResponse(w, http.StatusUnauthorized, nil)
+		common.SendErrorResponse(w, http.StatusUnauthorized, "")
 		return
 	}
 
@@ -25,17 +25,17 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := dec.Decode(&params)
 	if err != nil {
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"Invalid Payload"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "Invalid Payload")
 		return
 	}
 
 	if params.Prompt == "" {
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"Invalid Payload"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "Invalid Payload")
 		return
 	}
 
 	if dec.More() {
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"Request body must only contain a single JSON object"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "Request body must only contain a single JSON object")
 		return
 	}
 

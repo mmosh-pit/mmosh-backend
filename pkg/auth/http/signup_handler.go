@@ -15,7 +15,7 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("error reading payload: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"invalid payload"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
@@ -23,7 +23,7 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		log.Printf("error decoding payload on signup: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, []string{"invalid payload"})
+		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
@@ -32,11 +32,11 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 
 		switch err {
 		case authDomain.ErrWalletAlreadyExists:
-			common.SendErrorResponse(w, http.StatusBadRequest, []string{err.Error()})
+			common.SendErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		default:
 			log.Printf("error sign up: %v", err)
-			common.SendErrorResponse(w, http.StatusInternalServerError, []string{err.Error()})
+			common.SendErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 	}
