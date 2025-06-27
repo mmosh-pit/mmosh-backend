@@ -51,7 +51,7 @@ type User struct {
 	Name           string              `bson:"name" json:"name"`
 	Email          string              `bson:"email" json:"email"`
 	Password       string              `bson:"password" json:"password"`
-	TelegramId     int                 `bson:"telegramId" json:"telegramId"`
+	Telegram       TelegramUserData    `bson:"telegram" json:"telegram"`
 	GuestData      GuestUserData       `bson:"guest_data" json:"guest_data"`
 	Sessions       []string            `bson:"sessions" json:"sessions"`
 	Bluesky        BlueskyUserData     `bson:"bluesky" json:"bluesky"`
