@@ -14,6 +14,7 @@ import (
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
 	googleHttp "github.com/mmosh-pit/mmosh_backend/pkg/google/http"
 	mailHttp "github.com/mmosh-pit/mmosh_backend/pkg/mail/http"
+	membersHttp "github.com/mmosh-pit/mmosh_backend/pkg/members/http"
 	postsHttp "github.com/mmosh-pit/mmosh_backend/pkg/posts/http"
 	subscriptionsHttp "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/http"
 	walletHttp "github.com/mmosh-pit/mmosh_backend/pkg/wallet/http"
@@ -22,6 +23,8 @@ import (
 var regexUUID = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
 
 var routes = []route{
+	newRoute("POST", "/early", authHttp.AddEarlyAccessHandler, false, false),
+
 	newRoute("POST", "/login", authHttp.LoginHandler, false, false),
 	newRoute("POST", "/request-code", authHttp.RequestCodeHandler, false, false),
 	newRoute("POST", "/signup", authHttp.SignUpHandler, false, false),
@@ -68,6 +71,8 @@ var routes = []route{
 
 	newRoute("POST", "/telegram", authHttp.AddTelegramHandler, true, false),
 	newRoute("DELETE", "/telegram", authHttp.DeleteTelegramHandler, true, false),
+
+	newRoute("GET", "/members", membersHttp.GetMembersHandler, true, false),
 }
 
 type route struct {

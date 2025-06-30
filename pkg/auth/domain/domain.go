@@ -12,6 +12,7 @@ var ErrWalletAlreadyExists = errors.New("wallet-exists")
 var ErrUserAlreadyExists = errors.New("user-exists")
 var ErrDataAlreadyExists = errors.New("data-already-exists")
 var ErrInvalidBluesky = errors.New("invalid-bluesky")
+var ErrEarlyAlreadyRegistered = errors.New("already-registered")
 
 type OnboardingStepParams struct {
 	Step int `json:"step"`
@@ -132,4 +133,9 @@ type Wallet struct {
 	Email     string    `json:"email" bson:"email"`
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
+}
+
+type AddEarlyAccessParams struct {
+	Name  string `json:"name" bson:"name"`
+	Email string `json:"email" bson:"email"`
 }
