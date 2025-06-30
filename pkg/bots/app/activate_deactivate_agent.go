@@ -1,9 +1,9 @@
 package bots
 
 import (
+	authDb "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
 	agentsDb "github.com/mmosh-pit/mmosh_backend/pkg/bots/db"
 	agentsDomain "github.com/mmosh-pit/mmosh_backend/pkg/bots/domain"
-	authDb "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
 	chatDb "github.com/mmosh-pit/mmosh_backend/pkg/chat/db"
 )
 
@@ -19,6 +19,10 @@ func ActivateDeactivateAgent(userId, agentId string) error {
 	// if user.Subscription.ProductId == "" || expiresAt.Before(time.Now()) {
 	// 	return agentsDomain.ErrUserNotSubscribed
 	// }
+
+	if user.ProfileNFT == "" {
+		return agentsDomain.ErrUserNotSubscribed
+	}
 
 	agent, err := agentsDb.GetAgentByKey(agentId)
 
