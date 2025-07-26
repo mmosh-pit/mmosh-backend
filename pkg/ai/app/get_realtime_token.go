@@ -3,9 +3,12 @@ package ai
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+
+	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 )
 
 func GetRealtimeToken() (any, error) {
@@ -26,6 +29,10 @@ func GetRealtimeToken() (any, error) {
 	}
 
 	request, err := http.NewRequest("POST", "https://api.openai.com/v1/realtime/sessions", bytes.NewBuffer(encoded))
+
+	key := config.GetOpenAIKey()
+
+	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", key))
 
 	if err != nil {
 		log.Printf("Could not create request: %v\n", err)

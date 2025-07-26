@@ -19,9 +19,9 @@ type RequestCodeParams struct {
 
 func RequestCode(email string) error {
 
-	_, err := authDb.GetUserByEmail(email)
+	user, err := authDb.GetUserByEmail(email)
 
-	if err == nil {
+	if err == nil && user.ID != nil {
 		return auth.ErrUserAlreadyExists
 	}
 

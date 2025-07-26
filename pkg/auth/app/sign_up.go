@@ -17,9 +17,9 @@ type SignUpResponse struct {
 }
 
 func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
-	_, err := authDb.GetUserByEmail(params.Email)
+	existingUser, err := authDb.GetUserByEmail(params.Email)
 
-	if err == nil {
+	if err == nil && existingUser.ID != nil {
 		return nil, authDomain.ErrUserAlreadyExists
 	}
 
@@ -57,6 +57,12 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 
 	id := primitive.NewObjectID()
 
+	bot := params.FromBot
+
+	if bot == "" {
+		bot = "KIN"
+	}
+
 	user := &authDomain.User{
 		ID:         &id,
 		Name:       params.Name,
@@ -70,6 +76,7 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 			Picture: "https://storage.googleapis.com/mmosh-assets/default.png",
 			Name:    params.Name,
 		},
+		FromBot: bot,
 	}
 
 	err = authDb.CreateUser(user)
@@ -86,9 +93,13 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 		User:  user,
 	}
 
-	chatDb.SetDefaultChat(user)
+	chatDb.SetDefaultChat(user, bot)
 
-	go commonApp.SendKartraNotification("Kinship_Bots_Sign_Up", params.Name, params.Email)
+	if bot == "FDN" {
+		go commonApp.SendKartraNotification("full_disclosure_bot", params.Name, "", params.Email)
+	} else {
+		go commonApp.SendKartraNotification("Kinship_Bots_Sign_Up", params.Name, "", params.Email)
+	}
 
 	return response, nil
 }

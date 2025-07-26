@@ -28,6 +28,7 @@ type SignUpParams struct {
 	Password string `json:"password"`
 	Name     string `json:"name"`
 	Code     int    `json:"code"`
+	FromBot  string `json:"from_bot"`
 }
 
 type GuestUserData struct {
@@ -63,6 +64,7 @@ type User struct {
 	CreatedAt      time.Time           `bson:"created_at"`
 	Profile        Profile             `json:"profile" bson:"profile"`
 	ProfileNFT     string              `json:"profilenft" bson:"profilenft"`
+	FromBot        string              `bson:"from_bot"`
 }
 
 type Profile struct {

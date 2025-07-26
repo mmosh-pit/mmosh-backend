@@ -21,7 +21,7 @@ func GetUserByEmail(email string) (authDomain.User, error) {
 
 	if err == mongo.ErrNoDocuments {
 		log.Printf("No document was found with the title %s\n", email)
-		return result, err
+		return result, nil
 	}
 
 	result.Password = ""

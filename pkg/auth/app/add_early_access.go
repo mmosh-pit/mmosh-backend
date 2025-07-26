@@ -25,7 +25,7 @@ func AddEarlyAccess(params authDomain.AddEarlyAccessParams) error {
 		return err
 	}
 
-	go commonApp.SendKartraNotification("kinship_bots_waitlist", params.Name, params.Email)
+	go commonApp.SendKartraNotification("kinship_bots_waitlist", params.Name, "", params.Email)
 
 	return nil
 }

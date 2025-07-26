@@ -13,6 +13,7 @@ import (
 
 type LeadType struct {
 	FirstName string `qs:"first_name"`
+	LastName  string `qs:"last_name"`
 	Email     string `qs:"email"`
 }
 
@@ -29,7 +30,7 @@ type KartraRequest struct {
 	Actions     []ActionType `qs:"actions"`
 }
 
-func SendKartraNotification(tag, name, email string) {
+func SendKartraNotification(tag, name, lastName, email string) {
 
 	appId, apiKey, apiPassword, baseUrl := config.GetKartraValues()
 
@@ -39,6 +40,7 @@ func SendKartraNotification(tag, name, email string) {
 		ApiPassword: apiPassword,
 		Lead: LeadType{
 			FirstName: name,
+			LastName:  lastName,
 			Email:     email,
 		},
 	}
@@ -58,8 +60,6 @@ func SendKartraNotification(tag, name, email string) {
 
 	urlVal.Add("actions[0][cmd]", "assign_tag")
 	urlVal.Add("actions[0][tag_name]", tag)
-
-	log.Printf("Sending data over request: %s\n", strings.NewReader(urlVal.Encode()))
 
 	req, err := http.NewRequest("POST", baseUrl, strings.NewReader(urlVal.Encode()))
 
