@@ -3,6 +3,7 @@ package ai
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -34,6 +35,10 @@ func GetRealtimeToken() (any, error) {
 
 	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", key))
 
+	request.Header.Add("Content-Type", "application/json")
+
+	log.Printf("Sending headers: %v\n", request.Header.Get("Authorization"))
+
 	if err != nil {
 		log.Printf("Could not create request: %v\n", err)
 
@@ -48,7 +53,22 @@ func GetRealtimeToken() (any, error) {
 		return nil, err
 	}
 
+	if res.StatusCode >= 400 {
+		return nil, errors.New("unauthorized")
+	}
+
 	body, err := io.ReadAll(res.Body)
 
-	return body, err
+	log.Printf("response body: %v\n", string(body))
+	log.Printf("Response code: %v\n", res.StatusCode)
+
+	var result any
+
+	err = json.Unmarshal(body, &result)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, err
 }
