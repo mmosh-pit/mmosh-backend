@@ -64,6 +64,7 @@ type User struct {
 	CreatedAt      time.Time           `bson:"created_at"`
 	Profile        Profile             `json:"profile" bson:"profile"`
 	ProfileNFT     string              `json:"profilenft" bson:"profilenft"`
+	Role           string              `json:"role" bson:"role"`
 	FromBot        string              `bson:"from_bot"`
 }
 

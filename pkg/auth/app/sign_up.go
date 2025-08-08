@@ -76,6 +76,7 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 			Picture: "https://storage.googleapis.com/mmosh-assets/default.png",
 			Name:    params.Name,
 		},
+		Role:    "member",
 		FromBot: bot,
 	}
 
