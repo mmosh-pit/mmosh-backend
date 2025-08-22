@@ -45,6 +45,8 @@ type CreateAgentData struct {
 	Creator          string              `bson:"creator" json:"creator"`
 	CreatorUsername  string              `bson:"creatorUsername" json:"creatorUsername"`
 	Type             string              `bson:"type" json:"type"`
+	Code             string              `bson:"code" json:"code"`
+	Privacy          string              `bson:"privacy" json:"privacy"`
 }
 
 type Distribution struct {

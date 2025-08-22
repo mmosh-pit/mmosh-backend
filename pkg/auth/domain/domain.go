@@ -39,7 +39,6 @@ type GuestUserData struct {
 	LastName    string `json:"lastName"`
 	Username    string `json:"username"`
 	Website     string `json:"website"`
-	Pronouns    string `json:"pronouns"`
 	Bio         string `json:"bio"`
 }
 

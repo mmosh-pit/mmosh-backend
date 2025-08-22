@@ -12,7 +12,17 @@ import (
 
 var subscriptionProductIds = []string{"intensive", "immersive", "expansive"}
 
-var agents = []string{"5", "25", "0"}
+var benefits = [][]string{
+	{
+		"Revenue Distribution",
+		"Up to 3 Personal Bots",
+	},
+	{
+		"Revenue Distribution",
+		"Up to 3 Personal Bots",
+		"Up to 3 Community Bots",
+	},
+}
 
 func AddSubscriptionsIfNotCreatedAlready() {
 	for i, item := range subscriptionProductIds {
@@ -25,7 +35,7 @@ func AddSubscriptionsIfNotCreatedAlready() {
 					Tier:      i + 1,
 					ProductId: item,
 					Name:      strings.Title(item),
-					Agents:    agents[i],
+					Benefits:  benefits[i],
 				})
 
 				if err != nil {

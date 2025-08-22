@@ -60,6 +60,7 @@ var routes = []route{
 	newRoute("PUT", "/onboarding-step", authHttp.SetOnboardingStepHandler, true, false),
 
 	newRoute("GET", "/my-bots", botsHttp.GetMyBotsHandler, true, false),
+	newRoute("GET", "/bots", botsHttp.GetBotsHandler, true, false),
 	newRoute("POST", "/bots", botsHttp.CreateBotHandler, true, false),
 
 	newRoute("PUT", "/update-profile-data", authHttp.UpdateProfileDataHandler, true, false),

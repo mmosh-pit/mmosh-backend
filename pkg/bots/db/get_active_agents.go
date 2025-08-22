@@ -19,7 +19,7 @@ func GetActiveAgents(userId string) []agentsDomain.ActivatedAgentResponse {
 	resultingAgents := []agentsDomain.ActivatedAgentResponse{}
 
 	res, err := collection.Find(*ctx, bson.D{{Key: "userId", Value: userId}}, &options.FindOptions{
-		Projection: map[string]interface{}{
+		Projection: map[string]any{
 			"agentId": 1,
 		},
 	})

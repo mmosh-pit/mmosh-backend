@@ -71,7 +71,6 @@ func Start() {
 			break
 
 		case client := <-WsPool.Leave:
-			log.Printf("Deleting client: %v\n", client.UserId)
 			delete(WsPool.Clients, client.UserId)
 			break
 

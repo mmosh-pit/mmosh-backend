@@ -17,7 +17,11 @@ func GetActiveAgentsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	agents, err := agentsApp.GetActiveAgents(userId)
+	query := r.URL.Query()
+
+	search := query.Get("search")
+
+	agents, err := agentsApp.GetActiveAgents(userId, search)
 
 	if err != nil {
 		switch {

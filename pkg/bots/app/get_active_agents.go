@@ -1,12 +1,12 @@
 package bots
 
 import (
+	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
 	agentsDb "github.com/mmosh-pit/mmosh_backend/pkg/bots/db"
 	agentsDomain "github.com/mmosh-pit/mmosh_backend/pkg/bots/domain"
-	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
 )
 
-func GetActiveAgents(userId string) ([]agentsDomain.ActivatedAgentResponse, error) {
+func GetActiveAgents(userId, search string) ([]agentsDomain.ActivatedAgentResponse, error) {
 
 	_, err := auth.GetUserById(userId)
 
