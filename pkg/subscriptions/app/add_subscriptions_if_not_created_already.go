@@ -10,17 +10,23 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var subscriptionProductIds = []string{"intensive", "immersive", "expansive"}
+var subscriptionProductIds = []string{"guest", "enjoyer", "creator"}
 
 var benefits = [][]string{
 	{
-		"Revenue Distribution",
-		"Up to 3 Personal Bots",
+		"Can only interact with Public Bots",
+		"No access to Bot Studio, Offers or Bot Subscriptions",
 	},
+
 	{
 		"Revenue Distribution",
 		"Up to 3 Personal Bots",
 		"Up to 3 Community Bots",
+	},
+
+	{
+		"Revenue Distribution",
+		"Up to 3 Personal Bots",
 	},
 }
 

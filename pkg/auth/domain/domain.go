@@ -88,6 +88,7 @@ type Profile struct {
 
 type UserSubscription struct {
 	ProductId        string `bson:"product_id" json:"product_id"`
+	SubProductId     string `bson:"sub_product_id" json:"sub_product_id"`
 	PurchaseToken    string `bson:"purchase_token" json:"purchase_token"`
 	SubscriptionId   string `bson:"subscription_id" json:"subscription_id"`
 	SubscriptionTier int    `bson:"subscription_tier" json:"subscription_tier"`

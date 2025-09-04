@@ -1,6 +1,8 @@
 package subscriptions
 
 import (
+	"log"
+
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -9,6 +11,8 @@ import (
 func DeleteUserSubscription(userId *primitive.ObjectID, productId string) error {
 	client, ctx := config.GetMongoClient()
 	databaseName := config.GetDatabaseName()
+
+	log.Printf("Deleting subscription... %s", userId.String())
 
 	collection := client.Database(databaseName).Collection("mmosh-users")
 

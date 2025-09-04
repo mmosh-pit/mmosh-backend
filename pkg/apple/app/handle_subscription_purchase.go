@@ -29,7 +29,7 @@ func HandleSubscriptionPurchases(notificationType, notificationSubType string, d
 	if notificationType == appleDomain.SUBSCRIBED || notificationType == appleDomain.DID_RENEW ||
 		notificationType == appleDomain.OFFER_REDEEMED || notificationType == appleDomain.REFUND_REVERSED {
 
-		subscriptionsDb.AddUserSubscription(user.ID, data.ProductId, data.ExpiresDate, "apple")
+		subscriptionsDb.AddUserSubscription(user.ID, data.ProductId, data.ExpiresDate, "apple", "", data.OfferIdentifier)
 
 		// if notificationType == appleDomain.SUBSCRIBED || notificationType == appleDomain.OFFER_REDEEMED {
 		// }

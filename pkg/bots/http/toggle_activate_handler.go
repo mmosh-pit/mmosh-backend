@@ -40,6 +40,7 @@ func ToggleActivateHandler(w http.ResponseWriter, r *http.Request) {
 	err = agentsApp.ActivateDeactivateAgent(userId, data.AgentId)
 
 	if err != nil {
+		log.Printf("[ACTIVATING AGENTS] error: %v\n", err)
 		switch {
 		case errors.Is(err, agentsDomain.ErrAgentNotExists), errors.Is(err, agentsDomain.ErrUserNotSubscribed), errors.Is(err, agentsDomain.ErrUserNotFound):
 

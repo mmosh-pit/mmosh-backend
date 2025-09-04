@@ -49,12 +49,11 @@ func HandleSubscriptionNotification(packageName string, data googleDomain.Subscr
 
 		log.Printf("AcknowledgementState: %v\n", subscriptionPurchase.AcknowledgementState)
 		log.Printf("SubscriptionState: %v\n", subscriptionPurchase.SubscriptionState)
-		log.Printf("Data: %v\n", subscriptionPurchase.LinkedPurchaseToken)
-
 		productId := ""
+		subProductId := ""
 
 		for _, spli := range subscriptionPurchase.LineItems {
-			productId = spli.OfferDetails.BasePlanId
+			subProductId = spli.OfferDetails.BasePlanId
 		}
 
 		if productId == "" {
@@ -68,6 +67,7 @@ func HandleSubscriptionNotification(packageName string, data googleDomain.Subscr
 
 		} else if data.NotificationType == googleDomain.SUBSCRIPTION_RESTARTED {
 		} else if subscriptionPurchase.SubscriptionState == googleDomain.SUBSCRIPTION_STATE_ACTIVE {
+			log.Println("1")
 			if subscriptionPurchase.AcknowledgementState == googleDomain.SUBSCRIPTION_ACKNOWLEDGEMENT_STATE_PENDING {
 				if err := apService.Purchases.Subscriptions.Acknowledge(
 					packageName,
@@ -83,11 +83,13 @@ func HandleSubscriptionNotification(packageName string, data googleDomain.Subscr
 
 				expiresAt, err := time.Parse(time.RFC3339Nano, subscriptionPurchase.LineItems[0].ExpiryTime)
 
+				log.Println("2")
 				if err != nil {
 					return err
 				}
 
-				subscriptionsDb.AddUserSubscription(parsedObjectId, productId, expiresAt.Unix(), "google")
+				log.Println("[GOOGLE] Adding user subscription...")
+				subscriptionsDb.AddUserSubscription(parsedObjectId, productId, expiresAt.Unix(), "google", data.PurchaseToken, subProductId)
 
 			}
 
