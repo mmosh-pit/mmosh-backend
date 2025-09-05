@@ -4,6 +4,7 @@ import (
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 	subscriptionsDomain "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/domain"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func GetSubscriptions() ([]subscriptionsDomain.Subscription, error) {
@@ -14,7 +15,12 @@ func GetSubscriptions() ([]subscriptionsDomain.Subscription, error) {
 
 	var subscriptions []subscriptionsDomain.Subscription
 
-	res, err := collection.Find(*ctx, bson.D{{}})
+	opts := options.Find().SetSort(bson.D{{
+		Key:   "tier",
+		Value: -1,
+	}})
+
+	res, err := collection.Find(*ctx, bson.D{{}}, opts)
 
 	for res.Next(*ctx) {
 		var subscription subscriptionsDomain.Subscription
