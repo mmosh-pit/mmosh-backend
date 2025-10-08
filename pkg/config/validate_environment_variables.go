@@ -40,6 +40,8 @@ var (
 	GoogleBillingPubSubVerificationToken string
 
 	GoogleAppStoreBundleId string
+
+	nextBackendUrl string
 )
 
 func ValidateEnvironmentVariables(path string) {
@@ -176,6 +178,13 @@ func ValidateEnvironmentVariables(path string) {
 	if !ok {
 		panic("OPEN_AI_KEY is missing")
 	}
+
+	foundNextBackendUrl, ok := os.LookupEnv("NEXT_BACKEND_URL")
+	if !ok {
+		panic("NEXT_BACKEND_URL is missing")
+	}
+
+	nextBackendUrl = foundNextBackendUrl
 
 	kartraAppId = foundKartraAppId
 	kartraApiKey = foundKartraApiKey
