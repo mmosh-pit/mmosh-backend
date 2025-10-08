@@ -16,6 +16,7 @@ import (
 	mailHttp "github.com/mmosh-pit/mmosh_backend/pkg/mail/http"
 	membersHttp "github.com/mmosh-pit/mmosh_backend/pkg/members/http"
 	postsHttp "github.com/mmosh-pit/mmosh_backend/pkg/posts/http"
+	receiptHttp "github.com/mmosh-pit/mmosh_backend/pkg/receipt/http"
 	subscriptionsHttp "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/http"
 	walletHttp "github.com/mmosh-pit/mmosh_backend/pkg/wallet/http"
 )
@@ -74,6 +75,8 @@ var routes = []route{
 	newRoute("DELETE", "/telegram", authHttp.DeleteTelegramHandler, true, false),
 
 	newRoute("GET", "/members", membersHttp.GetMembersHandler, true, false),
+
+	newRoute("POST", "/save-receipt", receiptHttp.SaveReceiptHandler, true, false),
 }
 
 type route struct {
