@@ -77,6 +77,7 @@ var routes = []route{
 	newRoute("GET", "/members", membersHttp.GetMembersHandler, true, false),
 
 	newRoute("POST", "/save-receipt", receiptHttp.SaveReceiptHandler, true, false),
+	newRoute("POST", "/verify-receipt", receiptHttp.VerifyReceiptHandler, true, false),
 }
 
 type route struct {

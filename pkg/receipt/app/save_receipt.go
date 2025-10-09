@@ -95,14 +95,8 @@ func getTransactionAmount(productId string) int {
 	}
 }
 
-type DistributeRequest struct {
-	StakedAmount int    `json:"stakedAmount"`
-	UserAddress  string `json:"userAddeess"` // Note: Typo preserved from original
-	PurchaseID   string `json:"purchaseId"`
-}
-
 func distributeToLineage(stakedAmount int, userAddress string, purchaseToken string, authToken string) (*http.Response, error) {
-	requestBody := DistributeRequest{
+	requestBody := receiptDomain.DistributeRequest{
 		StakedAmount: stakedAmount,
 		UserAddress:  userAddress,
 		PurchaseID:   purchaseToken,
@@ -123,14 +117,11 @@ func distributeToLineage(stakedAmount int, userAddress string, purchaseToken str
 	if err != nil {
 		return nil, err
 	}
-
-	// Set headers - use the authToken parameter
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", authToken)
 
-	// Send request
 	client := &http.Client{
-		Timeout: 30 * time.Second, // Add timeout for better reliability
+		Timeout: 30 * time.Second,
 	}
 	return client.Do(req)
 }
