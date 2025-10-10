@@ -3,8 +3,6 @@ package auth
 import (
 	"fmt"
 	"log"
-	"math"
-	"math/rand"
 	"os"
 
 	authDb "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
@@ -13,16 +11,12 @@ import (
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
-type RequestCodeParams struct {
-	Email string `json:"email"`
-}
-
-func RequestCode(email string) error {
+func ForgotPasswordVerification(email string) error {
 
 	user, err := authDb.GetUserByEmail(email)
 
-	if err == nil && user.ID != nil {
-		return auth.ErrUserAlreadyExists
+	if err != nil || user.ID == nil {
+		return auth.ErrUserNotExists
 	}
 
 	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
@@ -36,7 +30,7 @@ func RequestCode(email string) error {
 		from := mail.NewEmail("Kinship Bots", "security@kinshipbots.com")
 		subject := "Verification Code"
 		to := mail.NewEmail("", email)
-		htmlContent := fmt.Sprintf("Hey there!<br /> Here's your code to verify your Email and finish your registration into Kinship Bots!<br /> <strong>%d</strong>", code)
+		htmlContent := fmt.Sprintf("Hey there!<br /> Here's your code to reset your Password<br /> <strong>%d</strong>", code)
 		message := mail.NewSingleEmail(from, subject, to, "", htmlContent)
 		res, err := client.Send(message)
 		if err != nil {
@@ -52,8 +46,4 @@ func RequestCode(email string) error {
 	}
 
 	return RequestCode(email)
-}
-
-func generateCode() int {
-	return int(math.Floor(100000 + rand.Float64()*900000))
 }
