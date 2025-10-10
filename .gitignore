@@ -4,3 +4,5 @@ tmp/
 output_*
 
 **/*.go-E*
+
+service-account.json
