@@ -11,6 +11,7 @@ import (
 	authHttp "github.com/mmosh-pit/mmosh_backend/pkg/auth/http"
 	botsHttp "github.com/mmosh-pit/mmosh_backend/pkg/bots/http"
 	chatHttp "github.com/mmosh-pit/mmosh_backend/pkg/chat/http"
+	commonHttp "github.com/mmosh-pit/mmosh_backend/pkg/common/http"
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
 	googleHttp "github.com/mmosh-pit/mmosh_backend/pkg/google/http"
 	mailHttp "github.com/mmosh-pit/mmosh_backend/pkg/mail/http"
@@ -29,6 +30,8 @@ var routes = []route{
 	newRoute("POST", "/login", authHttp.LoginHandler, false, false),
 	newRoute("POST", "/request-code", authHttp.RequestCodeHandler, false, false),
 	newRoute("POST", "/signup", authHttp.SignUpHandler, false, false),
+	newRoute("POST", "/forgot-password-verification", authHttp.ForgotPasswordVerificationHandler, false, false),
+  newRoute("POST", "/change-password", , false, false),
 
 	newRoute("GET", "/address", authHttp.GetWalletAddressHandler, true, false),
 	newRoute("POST", "/sign", authHttp.SignTransactionHandler, true, false),
@@ -78,6 +81,8 @@ var routes = []route{
 
 	newRoute("POST", "/save-receipt", receiptHttp.SaveReceiptHandler, true, false),
 	newRoute("POST", "/verify-receipt", receiptHttp.VerifyReceiptHandler, true, false),
+
+	newRoute("GET", "/health", commonHttp.HealthCheckHandler, false, false),
 }
 
 type route struct {

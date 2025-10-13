@@ -26,6 +26,18 @@ func HandleSubscriptionPurchases(notificationType, notificationSubType string, d
 		return err
 	}
 
+	// TEMPORAL
+	// jsonData, err := json.MarshalIndent(data, "", "  ") // Use MarshalIndent for pretty-printed JSON
+	// if err == nil {
+	// 	// Write the JSON data to a file
+	// 	filePath := "output_apple.json"
+	// 	err = os.WriteFile(filePath, jsonData, 0644) // 0644 sets file permissions
+	// 	if err != nil {
+	// 		fmt.Printf("Error writing to file: %v\n", err)
+	// 	}
+	// }
+	// END TEMPORAL
+
 	if notificationType == appleDomain.SUBSCRIBED || notificationType == appleDomain.DID_RENEW ||
 		notificationType == appleDomain.OFFER_REDEEMED || notificationType == appleDomain.REFUND_REVERSED {
 

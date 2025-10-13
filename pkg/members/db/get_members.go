@@ -71,22 +71,22 @@ func GetMembers(page int64, search string, userId primitive.ObjectID) []auth.Use
 					Value: []any{
 						bson.D{{
 							Key:   "profile.username",
-							Value: bson.M{"$regex": searchText, "options": "i"},
+							Value: primitive.Regex{Pattern: searchText, Options: "i"},
 						}},
 
 						bson.D{{
 							Key:   "profile.name",
-							Value: bson.M{"$regex": searchText, "options": "i"},
+							Value: primitive.Regex{Pattern: searchText, Options: "i"},
 						}},
 
 						bson.D{{
 							Key:   "guest_data.name",
-							Value: bson.M{"$regex": searchText, "options": "i"},
+							Value: primitive.Regex{Pattern: searchText, Options: "i"},
 						}},
 
 						bson.D{{
 							Key:   "guest_data.username",
-							Value: bson.M{"$regex": searchText, "options": "i"},
+							Value: primitive.Regex{Pattern: searchText, Options: "i"},
 						}},
 					},
 				}},

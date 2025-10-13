@@ -45,6 +45,18 @@ func HandleSubscriptionNotification(packageName string, data googleDomain.Subscr
 			return err
 		}
 
+		// TEMPORAL
+		// jsonData, err := json.MarshalIndent(subscriptionPurchase, "", "  ") // Use MarshalIndent for pretty-printed JSON
+		// if err == nil {
+		// 	// Write the JSON data to a file
+		// 	filePath := "output_google.json"
+		// 	err = os.WriteFile(filePath, jsonData, 0644) // 0644 sets file permissions
+		// 	if err != nil {
+		// 		fmt.Printf("Error writing to file: %v\n", err)
+		// 	}
+		// }
+		// END TEMPORAL
+
 		parsedObjectId := user.ID
 
 		log.Printf("AcknowledgementState: %v\n", subscriptionPurchase.AcknowledgementState)
@@ -67,7 +79,6 @@ func HandleSubscriptionNotification(packageName string, data googleDomain.Subscr
 
 		} else if data.NotificationType == googleDomain.SUBSCRIPTION_RESTARTED {
 		} else if subscriptionPurchase.SubscriptionState == googleDomain.SUBSCRIPTION_STATE_ACTIVE {
-			log.Println("1")
 			if subscriptionPurchase.AcknowledgementState == googleDomain.SUBSCRIPTION_ACKNOWLEDGEMENT_STATE_PENDING {
 				if err := apService.Purchases.Subscriptions.Acknowledge(
 					packageName,
@@ -83,7 +94,6 @@ func HandleSubscriptionNotification(packageName string, data googleDomain.Subscr
 
 				expiresAt, err := time.Parse(time.RFC3339Nano, subscriptionPurchase.LineItems[0].ExpiryTime)
 
-				log.Println("2")
 				if err != nil {
 					return err
 				}

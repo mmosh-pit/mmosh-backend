@@ -13,6 +13,7 @@ var ErrUserAlreadyExists = errors.New("user-exists")
 var ErrDataAlreadyExists = errors.New("data-already-exists")
 var ErrInvalidBluesky = errors.New("invalid-bluesky")
 var ErrEarlyAlreadyRegistered = errors.New("already-registered")
+var ErrUserNotExists = errors.New("user-not-exists")
 
 type OnboardingStepParams struct {
 	Step int `json:"step"`
