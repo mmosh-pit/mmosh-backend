@@ -57,10 +57,8 @@ func CheckPaymentStatus(packageName, productId, token string) (*receiptDomain.Pa
 		paymentInfo.CancellationTime = &cancelTime
 	}
 
-	fmt.Println("----- Payment state -----:", purchase.PaymentState)
 	if purchase.PaymentState != nil {
 		paymentInfo.PaymentState = *purchase.PaymentState
-		fmt.Println("----- Payment Info -----:", paymentInfo)
 
 		switch *purchase.PaymentState {
 		case 0:
@@ -106,4 +104,70 @@ func CheckPaymentStatus(packageName, productId, token string) (*receiptDomain.Pa
 	}
 
 	return paymentInfo, nil
+}
+
+// IsReceiptRenewed checks all receipts and prints whether each is renewed.
+func IsReceiptRenewed() {
+	receipts, err := receiptDb.GetAllReceipts()
+	if err != nil {
+		return
+	}
+	for _, receipt := range receipts {
+		if receipt.IsCanceled {
+			continue
+		}
+		if time.Now().UTC().After(receipt.ExpiredAt.UTC()) {
+			valid := _validateGoogleReceipt(receipt.PackageName, receipt.ProductID, receipt.PurchaseToken)
+
+			if valid {
+				stakedAmount := getTransactionAmount(receipt.ProductID)
+				_, err = distributeToLineage(stakedAmount, receipt.Wallet, receipt.PurchaseToken, "")
+				if err == nil {
+					receiptDb.UpdateReceipt(receipt.PurchaseToken, false)
+				}
+			}
+			continue
+		}
+
+	}
+}
+
+func _validateGoogleReceipt(packageName, productId, token string) bool {
+	ctx := context.Background()
+
+	srv, err := androidpublisher.NewService(ctx, option.WithCredentialsFile("service-account.json"))
+	if err != nil {
+		return false
+	}
+
+	purchase, err := srv.Purchases.Subscriptions.Get(packageName, productId, token).Do()
+	if err != nil {
+		return false
+	}
+	// Check if subscription is cancelled
+	if purchase.CancelReason != 0 {
+		receiptDb.UpdateReceipt(token, true)
+		return false
+	}
+
+	// Check expiry time
+	currentTimeMillis := time.Now().UnixNano() / int64(time.Millisecond)
+	if purchase.ExpiryTimeMillis <= currentTimeMillis {
+		return false
+	}
+
+	// Check payment state
+	if purchase.PaymentState == nil {
+		return false
+	}
+
+	// Valid payment states: 1 (received), 2 (free trial), 3 (pending deferred upgrade/downgrade)
+	switch *purchase.PaymentState {
+	case 0: // Payment pending
+		return false
+	case 1, 2, 3: // Valid states
+		return true
+	default: // Unknown state
+		return false
+	}
 }

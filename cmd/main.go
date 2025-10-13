@@ -5,9 +5,12 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/robfig/cron/v3"
+
 	apple "github.com/mmosh-pit/mmosh_backend/pkg/apple/app"
 	chat "github.com/mmosh-pit/mmosh_backend/pkg/chat/app"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
+	receiptApp "github.com/mmosh-pit/mmosh_backend/pkg/receipt/app"
 	subscriptions "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/app"
 )
 
@@ -19,6 +22,14 @@ func main() {
 	defer config.DisconnectMongoClient()
 
 	subscriptions.AddSubscriptionsIfNotCreatedAlready()
+
+	c := cron.New()
+	c.AddFunc("@every 1h", func() {
+		log.Println("Cron job running every 1 hour")
+		receiptApp.IsReceiptRenewed()
+	})
+	c.Start()
+	defer c.Stop()
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", 6050),

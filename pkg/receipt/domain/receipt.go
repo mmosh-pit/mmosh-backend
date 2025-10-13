@@ -14,6 +14,8 @@ type Receipt struct {
 	Wallet        string             `bson:"wallet" json:"wallet"`
 	Platform      string             `bson:"platform" json:"platform"`
 	CreatedAt     time.Time          `bson:"created_at" json:"created_at"`
+	ExpiredAt     time.Time          `bson:"expired_at" json:"expired_at"`
+	IsCanceled    bool               `bson:"is_canceled" json:"is_canceled"`
 }
 
 type SaveReceiptParams struct {

@@ -23,7 +23,9 @@ func SaveReceipt(params *receiptDomain.SaveReceiptParams, authToken string) (*re
 		PurchaseToken: params.PurchaseToken,
 		Wallet:        params.Wallet,
 		Platform:      params.Platform,
-		CreatedAt:     time.Now(),
+		CreatedAt:     time.Now().UTC(),
+		ExpiredAt:     time.Now().UTC().Add(31 * 24 * time.Hour),
+		IsCanceled:    false,
 	}
 
 	exist, err := receiptDb.GetReceipt(params.PurchaseToken)
