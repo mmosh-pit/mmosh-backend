@@ -23,14 +23,23 @@ func SaveReceipt(params *receiptDomain.SaveReceiptParams, authToken string) (*re
 		PurchaseToken: params.PurchaseToken,
 		Wallet:        params.Wallet,
 		Platform:      params.Platform,
-		CreatedAt:     time.Now(),
+		CreatedAt:     time.Now().UTC(),
+		ExpiredAt:     time.Now().UTC().Add(31 * 24 * time.Hour),
+		IsCanceled:    false,
+	}
+
+	exist, err := receiptDb.GetReceipt(params.PurchaseToken)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check existing receipt: %v", err)
+	}
+	if exist != nil {
+		return nil, fmt.Errorf("purchase token already exists")
 	}
 
 	valid, err := validateGoogleReceipt(params.PackageName, params.ProductID, params.PurchaseToken)
 	if err != nil {
 		return nil, err
 	}
-
 	if !valid {
 		return nil, fmt.Errorf("subscription invalid or expired")
 	}
