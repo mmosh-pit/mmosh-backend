@@ -92,7 +92,7 @@ func Start() {
 				Type:      "user",
 			}
 
-			data := map[string]interface{}{
+			data := map[string]any{
 				"event": "userMessage",
 				"data":  messageData,
 			}

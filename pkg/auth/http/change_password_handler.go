@@ -18,7 +18,7 @@ func ChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var data authApp.RequestCodeParams
+	var data authApp.ChangePasswordParams
 
 	err = json.Unmarshal(body, &data)
 	if err != nil {
@@ -27,7 +27,7 @@ func ChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = authApp.RequestCode(data.Email)
+	err = authApp.ChangePassword(data)
 	if err != nil {
 		log.Printf("error request code: %v", err)
 		common.SendErrorResponse(w, http.StatusBadRequest, err.Error())

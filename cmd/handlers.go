@@ -31,7 +31,7 @@ var routes = []route{
 	newRoute("POST", "/request-code", authHttp.RequestCodeHandler, false, false),
 	newRoute("POST", "/signup", authHttp.SignUpHandler, false, false),
 	newRoute("POST", "/forgot-password-verification", authHttp.ForgotPasswordVerificationHandler, false, false),
-  newRoute("POST", "/change-password", , false, false),
+	newRoute("POST", "/change-password", authHttp.ChangePasswordHandler, false, false),
 
 	newRoute("GET", "/address", authHttp.GetWalletAddressHandler, true, false),
 	newRoute("POST", "/sign", authHttp.SignTransactionHandler, true, false),

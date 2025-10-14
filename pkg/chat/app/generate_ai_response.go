@@ -55,7 +55,7 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 		ChatId:    message.ChatId,
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"event": "aiMessage",
 		"data":  loadingMessage,
 	}
@@ -94,7 +94,7 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 			ChatId:    message.ChatId,
 		}
 
-		data := map[string]interface{}{
+		data := map[string]any{
 			"event": "aiMessage",
 			"data":  streamedMessage,
 		}
