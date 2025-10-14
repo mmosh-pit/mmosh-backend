@@ -83,6 +83,8 @@ var routes = []route{
 	newRoute("POST", "/verify-receipt", receiptHttp.VerifyReceiptHandler, true, false),
 
 	newRoute("GET", "/health", commonHttp.HealthCheckHandler, false, false),
+
+	newRoute("POST", "/account-deletion", authHttp.AccountDeletionHandler, false, false),
 }
 
 type route struct {

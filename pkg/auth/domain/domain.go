@@ -32,6 +32,12 @@ type SignUpParams struct {
 	FromBot  string `json:"from_bot"`
 }
 
+type AccountDeletionRequest struct {
+	Name   string `json:"name" bson:"name"`
+	Email  string `json:"email" bson:"email"`
+	Reason string `json:"reason" bson:"reason"`
+}
+
 type GuestUserData struct {
 	Picture     string `json:"picture"`
 	Banner      string `jsos:"banner"`
