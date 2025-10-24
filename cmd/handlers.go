@@ -16,6 +16,7 @@ import (
 	googleHttp "github.com/mmosh-pit/mmosh_backend/pkg/google/http"
 	mailHttp "github.com/mmosh-pit/mmosh_backend/pkg/mail/http"
 	membersHttp "github.com/mmosh-pit/mmosh_backend/pkg/members/http"
+	notificationHttp "github.com/mmosh-pit/mmosh_backend/pkg/notification/http"
 	postsHttp "github.com/mmosh-pit/mmosh_backend/pkg/posts/http"
 	receiptHttp "github.com/mmosh-pit/mmosh_backend/pkg/receipt/http"
 	subscriptionsHttp "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/http"
@@ -85,6 +86,9 @@ var routes = []route{
 	newRoute("GET", "/health", commonHttp.HealthCheckHandler, false, false),
 
 	newRoute("POST", "/account-deletion", authHttp.AccountDeletionHandler, false, false),
+
+	newRoute("POST", "/insert-player-id", notificationHttp.InsertPlayerIdHandler, true, false),
+	newRoute("POST", "/push-notification", notificationHttp.PushNotificationHandler, true, false),
 }
 
 type route struct {

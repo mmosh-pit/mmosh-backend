@@ -42,6 +42,9 @@ var (
 	GoogleAppStoreBundleId string
 
 	nextBackendUrl string
+
+	oneSignalApiKey string
+	oneSignalAppId  string
 )
 
 func ValidateEnvironmentVariables(path string) {
@@ -183,6 +186,17 @@ func ValidateEnvironmentVariables(path string) {
 	if !ok {
 		panic("NEXT_BACKEND_URL is missing")
 	}
+	foundOneSignalApiKey, ok := os.LookupEnv("ONESIGNAL_API_KEY")
+	if !ok {
+		panic("ONESIGNAL_API_KEY is missing")
+	}
+	foundOneSignalAppId, ok := os.LookupEnv("ONESIGNAL_APP_ID")
+	if !ok {
+		panic("ONESIGNAL_APP_ID is missing")
+	}
+
+	oneSignalApiKey = foundOneSignalApiKey
+	oneSignalAppId = foundOneSignalAppId
 
 	nextBackendUrl = foundNextBackendUrl
 
