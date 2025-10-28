@@ -87,7 +87,7 @@ var routes = []route{
 
 	newRoute("POST", "/account-deletion", authHttp.AccountDeletionHandler, false, false),
 
-	newRoute("POST", "/insert-player-id", notificationHttp.InsertPlayerIdHandler, true, false),
+	newRoute("POST", "/save-player-id", notificationHttp.SavePlayerIdHandler, true, false),
 	newRoute("POST", "/push-notification", notificationHttp.PushNotificationHandler, true, false),
 }
 
