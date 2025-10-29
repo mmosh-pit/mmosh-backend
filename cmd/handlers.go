@@ -89,6 +89,7 @@ var routes = []route{
 
 	newRoute("POST", "/save-player-id", notificationHttp.SavePlayerIdHandler, true, false),
 	newRoute("POST", "/push-notification", notificationHttp.PushNotificationHandler, true, false),
+	newRoute("POST", "/delete-player-id", notificationHttp.DeletePlayerIdHandler, true, false),
 }
 
 type route struct {
