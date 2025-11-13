@@ -47,6 +47,7 @@ type GuestUserData struct {
 	Username    string `json:"username"`
 	Website     string `json:"website"`
 	Bio         string `json:"bio"`
+	Challenges  string `json:"challenges"`
 }
 
 type AddReferrerParams struct {

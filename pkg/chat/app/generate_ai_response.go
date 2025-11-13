@@ -1,12 +1,10 @@
 package chat
 
 import (
-	"encoding/json"
 	"log"
 	"math/rand/v2"
 	"time"
 
-	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
 	chatDb "github.com/mmosh-pit/mmosh_backend/pkg/chat/db"
 	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,21 +12,6 @@ import (
 
 func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 	log.Println("0")
-	user, err := auth.GetUserById(message.Sender.Hex())
-
-	if err != nil {
-		data := map[string]string{
-			"event": "messageError",
-			"data":  "error-generating-response",
-		}
-
-		encoded, _ := json.Marshal(data)
-
-		client.sendResponse(encoded)
-		return
-	}
-
-	log.Println("1")
 
 	textChan := make(chan string)
 
@@ -74,7 +57,9 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 		ChatId:    message.ChatId,
 	}
 
-	go chatDb.FetchAIResponse(user.Name, message.Content, message.SystemPrompt, message.Namespaces, textChan)
+	chat, _ := chatDb.GetChatById(message.ChatId)
+
+	go chatDb.FetchAIResponse(message.AgentId, chat.Agent.Key, message.Content, message.SystemPrompt, client.Token, message.ChatId, message.Namespaces, textChan)
 
 	for {
 		text := <-textChan

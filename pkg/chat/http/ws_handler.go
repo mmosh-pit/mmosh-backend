@@ -20,9 +20,12 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 
 	user := r.Header.Get("userId")
 
+	token := r.URL.Query().Get("token")
+
 	poolClient := &chatApp.PoolClient{
-		Conn: conn,
-		Pool: chatApp.WsPool,
+		Conn:  conn,
+		Pool:  chatApp.WsPool,
+		Token: token,
 	}
 
 	clientData := &chatApp.ClientData{

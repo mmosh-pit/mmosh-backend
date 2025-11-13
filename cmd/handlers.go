@@ -85,6 +85,8 @@ var routes = []route{
 	newRoute("GET", "/health", commonHttp.HealthCheckHandler, false, false),
 
 	newRoute("POST", "/account-deletion", authHttp.AccountDeletionHandler, false, false),
+
+	newRoute("POST", "/send-bot-message", chatHttp.SendBotMessageHandler, false, false),
 }
 
 type route struct {

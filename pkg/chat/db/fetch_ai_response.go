@@ -7,18 +7,61 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
+	"time"
 
+	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func FetchAIResponse(username, text, systemPrompt string, namespaces []string, callbackChan chan string) {
-	data := map[string]interface{}{
-		"username":      username,
-		"prompt":        text,
-		"namespaces":    namespaces,
-		"system_prompt": systemPrompt,
-		"model":         "gemini-2.0-flash",
+// const queryData = {
+//   namespaces: [selectedChat!.chatAgent!.key, "PUBLIC"],
+//   query: content,
+//   instructions: selectedChat!.chatAgent!.system_prompt,
+//   chatHistory: chatHistory,
+//   agentId: selectedChat.chatAgent!.id,
+//   bot_id: selectedChat.chatAgent!.key,
+// };
+
+type IncomingMessage struct {
+	Type    string `json:"type"`
+	Content string `json:"content"`
+}
+
+func formatChatHistory(messages []chatDomain.Message) []map[string]any {
+	var formattedHistory []map[string]any
+	for _, msg := range messages {
+		role := "assistant"
+		if msg.Type == "user" {
+			role = "user"
+		}
+
+		formattedMsg := map[string]any{
+			"role":      role,
+			"content":   msg.Content,
+			"timestamp": msg.CreatedAt,
+		}
+		formattedHistory = append(formattedHistory, formattedMsg)
 	}
+
+	return formattedHistory
+}
+
+func FetchAIResponse(agentId *primitive.ObjectID, botId, text, systemPrompt, authToken string, chatId *primitive.ObjectID, namespaces []string, callbackChan chan string) {
+
+	messages := GetChatLastMessages(chatId)
+
+	data := map[string]any{
+		"query":        text,
+		"namespaces":   namespaces,
+		"instructions": systemPrompt,
+		"chatHistory":  formatChatHistory(messages),
+		"agentId":      agentId.Hex(),
+		"bot_id":       botId,
+	}
+
+	log.Printf("Sending request: %v\n", data)
 
 	encoded, err := json.Marshal(data)
 
@@ -30,11 +73,13 @@ func FetchAIResponse(username, text, systemPrompt string, namespaces []string, c
 
 	baseUrl := config.GetAIApiUrl()
 
-	url := fmt.Sprintf("%s/generate_stream/", baseUrl)
-
-	log.Printf("Sending request to URL: %s\n", url)
+	url := fmt.Sprintf("%s", baseUrl)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(encoded))
+
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "text/event-stream")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", authToken))
 
 	if err != nil {
 		log.Printf("Error in request: %v\n", err)
@@ -42,7 +87,9 @@ func FetchAIResponse(username, text, systemPrompt string, namespaces []string, c
 		return
 	}
 
-	client := http.Client{}
+	client := http.Client{
+		Timeout: time.Second * 500,
+	}
 	resp, err := client.Do(req)
 
 	if err != nil {
@@ -70,35 +117,19 @@ func FetchAIResponse(username, text, systemPrompt string, namespaces []string, c
 			break
 		}
 
-		callbackChan <- string(line)
+		if strings.Contains(string(line), "data") {
+			var message IncomingMessage
+
+			err = json.Unmarshal(line[6:], &message)
+
+			if err != nil {
+				log.Printf("Could not parse incoming message: %v\n", err)
+				continue
+			}
+
+			if message.Type == "content" {
+				callbackChan <- message.Content
+			}
+		}
 	}
-
-	///
-
-	// scanner := bufio.NewScanner(resp.Body)
-	// for scanner.Scan() {
-	// 	line := scanner.Text() // Or scanner.Bytes()
-	// 	fmt.Printf("Received: %s\n", line)
-	// 	callbackChan <- line
-	//
-	// 	// Here you would process the received line (e.g., parse JSON, handle event data)
-	// 	// Example: if line is "event: message", "data: { ... }" for SSE
-	// }
-	//
-	// if err := scanner.Err(); err != nil {
-	// 	// An error occurred during scanning, other than io.EOF
-	// 	// This could be a network error or the connection being closed unexpectedly.
-	// 	if err == io.EOF {
-	// 		log.Println("Stream closed by server (EOF).")
-	// 		callbackChan <- "____break____"
-	// 	} else {
-	// 		log.Printf("Error reading stream: %v", err)
-	// 		callbackChan <- "____break____"
-	// 	}
-	// } else {
-	// 	// scanner.Scan() returned false and scanner.Err() is nil,
-	// 	// which usually means io.EOF was encountered cleanly.
-	// 	log.Println("Stream finished.")
-	// 	callbackChan <- "____break____"
-	// }
 }

@@ -9,8 +9,6 @@ import (
 
 func HandleReadMessage(message chatDomain.SocketMessage, c *ClientData) {
 
-	log.Printf("Received message: %v\n", message)
-
 	switch message.Event {
 	case "message":
 
@@ -22,8 +20,6 @@ func HandleReadMessage(message chatDomain.SocketMessage, c *ClientData) {
 		}
 
 		message.UserId = c.UserId
-
-		log.Println("sending message to pool")
 
 		c.Client.Pool.SendMessage <- &message
 		break

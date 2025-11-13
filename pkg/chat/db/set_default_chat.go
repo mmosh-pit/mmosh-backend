@@ -26,7 +26,7 @@ func SetDefaultChat(user *auth.User, bot string) {
 
 	err := projectCollection.FindOne(*ctx, bson.D{{
 		Key:   "symbol",
-		Value: "KIN",
+		Value: "CATFAWN",
 	}}).Decode(&defaultBot)
 
 	if err != nil {

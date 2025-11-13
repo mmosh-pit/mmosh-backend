@@ -27,11 +27,14 @@ type PoolClient struct {
 	Conn       *websocket.Conn
 	WriteMutex sync.Mutex
 	Pool       *Pool
+	Token      string
 }
 
 type AIMessage struct {
 	UserId       string
 	Content      string
+	ChatId       string
+	AgentId      string
 	Namespaces   []string
 	SystemPrompt string
 }
@@ -84,12 +87,24 @@ func Start() {
 
 			userId, _ := primitive.ObjectIDFromHex(message.UserId)
 
+			chatId, err := primitive.ObjectIDFromHex(message.ChatId)
+
+			agentId, err := primitive.ObjectIDFromHex(message.AgentId)
+
+			resultingId := &agentId
+
+			if err != nil {
+				resultingId = nil
+			}
+
 			messageData := chat.Message{
 				ID:        &id,
 				Content:   message.Content,
 				Sender:    &userId,
 				CreatedAt: time.Now(),
 				Type:      "user",
+				AgentId:   resultingId,
+				ChatId:    &chatId,
 			}
 
 			data := map[string]any{
@@ -141,7 +156,7 @@ func Start() {
 				ChatId:       &chatId,
 			}
 
-			data := map[string]interface{}{
+			data := map[string]any{
 				"event": "userMessage",
 				"data":  messageData,
 			}
@@ -157,7 +172,7 @@ func Start() {
 	}
 }
 
-func (p *PoolClient) sendResponse(message interface{}) {
+func (p *PoolClient) sendResponse(message any) {
 	p.WriteMutex.Lock()
 	defer p.WriteMutex.Unlock()
 	err := p.Conn.WriteJSON(message)
