@@ -12,4 +12,5 @@ type ChatAgent struct {
 	SystemPrompt    string              `bson:"system_prompt" json:"system_prompt"`
 	CreatorUsername string              `bson:"creatorUsername" json:"creatorUsername"`
 	Type            string              `bson:"type" json:"type"`
+	DefaultModel    string              `bson:"defaultmodel" json:"defaultmodel"`
 }

@@ -14,6 +14,7 @@ type Bot struct {
 	SystemPrompt     string              `bson:"system_prompt" json:"system_prompt"`
 	CreatorUsername  string              `bson:"creatorUsername" json:"creatorUsername"`
 	Type             string              `bson:"type" json:"type"`
+	DefaultModel     string              `bson:"defaultmodel" json:"defaultmodel"`
 }
 
 type ToggleActivateAgentData struct {
@@ -47,6 +48,7 @@ type CreateAgentData struct {
 	Type             string              `bson:"type" json:"type"`
 	Code             string              `bson:"code" json:"code"`
 	Privacy          string              `bson:"privacy" json:"privacy"`
+	DefaultModel     string              `bson:"defaultmodel" json:"defaultmodel"`
 }
 
 type Distribution struct {
