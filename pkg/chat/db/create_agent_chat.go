@@ -3,8 +3,8 @@ package chat
 import (
 	"log"
 
-	agentsDomain "github.com/mmosh-pit/mmosh_backend/pkg/bots/domain"
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
+	agentsDomain "github.com/mmosh-pit/mmosh_backend/pkg/bots/domain"
 	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -49,6 +49,7 @@ func CreateAgentChat(ownerId *primitive.ObjectID, user *auth.User, agent *agents
 			SystemPrompt:    agent.SystemPrompt,
 			CreatorUsername: agent.CreatorUsername,
 			Type:            agent.Type,
+			DefaultModel:    agent.DefaultModel,
 		},
 		Deactivated: false,
 	}

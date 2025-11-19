@@ -14,7 +14,7 @@ func DeleteBlueskyData(userId primitive.ObjectID) error {
 
 	filter := bson.D{{Key: "_id", Value: userId}}
 
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "bluesky", Value: nil}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "bluesky", Value: nil}, {Key: "hasBlueSkyConnected", Value: false}}}}
 
 	_, err := collection.UpdateOne(
 		*ctx, filter, update,
