@@ -13,6 +13,7 @@ import (
 	chatHttp "github.com/mmosh-pit/mmosh_backend/pkg/chat/http"
 	commonHttp "github.com/mmosh-pit/mmosh_backend/pkg/common/http"
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
+	configHttp "github.com/mmosh-pit/mmosh_backend/pkg/config/http"
 	googleHttp "github.com/mmosh-pit/mmosh_backend/pkg/google/http"
 	mailHttp "github.com/mmosh-pit/mmosh_backend/pkg/mail/http"
 	membersHttp "github.com/mmosh-pit/mmosh_backend/pkg/members/http"
@@ -20,6 +21,8 @@ import (
 	receiptHttp "github.com/mmosh-pit/mmosh_backend/pkg/receipt/http"
 	subscriptionsHttp "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/http"
 	walletHttp "github.com/mmosh-pit/mmosh_backend/pkg/wallet/http"
+
+	stripeHttp "github.com/mmosh-pit/mmosh_backend/pkg/stripe/http"
 )
 
 var regexUUID = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
@@ -87,6 +90,11 @@ var routes = []route{
 	newRoute("POST", "/account-deletion", authHttp.AccountDeletionHandler, false, false),
 
 	newRoute("POST", "/send-bot-message", chatHttp.SendBotMessageHandler, false, false),
+
+	newRoute("POST", "/stripe-session", stripeHttp.GetStripeOnboardURLHandler, true, false),
+
+	newRoute("GET", "/available-themes", configHttp.GetAppThemesHandler, true, false),
+	newRoute("POST", "/theme", configHttp.CreateAppThemeHandler, true, false),
 }
 
 type route struct {
