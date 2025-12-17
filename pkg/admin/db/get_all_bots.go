@@ -1,0 +1,112 @@
+package db
+
+import (
+	"log"
+
+	bots "github.com/mmosh-pit/mmosh_backend/pkg/bots/domain"
+	"github.com/mmosh-pit/mmosh_backend/pkg/config"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
+)
+
+func GetAllBots(page int64, search string) *[]bots.Bot {
+
+	client, ctx := config.GetMongoClient()
+	databaseName := config.GetDatabaseName()
+
+	collection := client.Database(databaseName).Collection("mmosh-app-project")
+
+	opts := options.Find().SetSkip(page * 20).SetLimit(20).SetProjection(
+		bson.M{
+			"_id":             1,
+			"name":            1,
+			"symbol":          1,
+			"desc":            1,
+			"key":             1,
+			"image":           1,
+			"creatorUsername": 1,
+			"privacy":         1,
+			"system_prompt":   1,
+			"type":            1,
+		},
+	).SetSort(bson.D{{
+		Key:   "profile.seniority",
+		Value: -1,
+	}})
+
+	filter := bson.D{{}}
+
+	if search != "" {
+		filter = bson.D{{
+			Key: "$and",
+			Value: []any{
+				bson.D{{
+					Key: "$or",
+					Value: []any{
+						bson.D{{
+							Key: "name",
+							Value: primitive.Regex{
+								Pattern: search,
+								Options: "i",
+							},
+						}},
+
+						bson.D{{
+							Key: "symbol",
+							Value: primitive.Regex{
+								Pattern: search,
+								Options: "i",
+							},
+						}},
+
+						bson.D{{
+							Key: "desc",
+							Value: primitive.Regex{
+								Pattern: search,
+								Options: "i",
+							},
+						}},
+
+						bson.D{{
+							Key: "$and",
+							Value: []any{
+								bson.D{{
+									Key:   "code",
+									Value: search,
+								}},
+
+								bson.D{{
+									Key:   "privacy",
+									Value: "secret",
+								}},
+							},
+						}},
+					},
+				}},
+			},
+		}}
+	}
+
+	var result = []bots.Bot{}
+
+	res, err := collection.Find(*ctx, filter, opts)
+
+	if err != nil {
+		log.Printf("[ADMIN/GET BOTS] Got error here: %v\n", err)
+		return &result
+	}
+
+	for res.Next(*ctx) {
+		var bot bots.Bot
+
+		if err := res.Decode(&bot); err != nil {
+			log.Printf("[ADMIN/GET BOTS] Error decoding bot: %v\n", err)
+			continue
+		}
+
+		result = append(result, bot)
+	}
+
+	return &result
+}

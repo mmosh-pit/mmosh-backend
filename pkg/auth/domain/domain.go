@@ -73,6 +73,7 @@ type User struct {
 	ProfileNFT     string              `json:"profilenft" bson:"profilenft"`
 	Role           string              `json:"role" bson:"role"`
 	FromBot        string              `bson:"from_bot"`
+	Deactivated    bool                `json:"deactivated" bson:"deactivated"`
 }
 
 type Profile struct {

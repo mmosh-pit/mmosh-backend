@@ -1,0 +1,16 @@
+package app
+
+import (
+	adminDb "github.com/mmosh-pit/mmosh_backend/pkg/admin/db"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+func ActivateUser(userId string) error {
+	parsedUserId, err := primitive.ObjectIDFromHex(userId)
+
+	if err != nil {
+		return err
+	}
+
+	return adminDb.ActivateUser(&parsedUserId)
+}
