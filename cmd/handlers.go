@@ -23,8 +23,6 @@ import (
 	receiptHttp "github.com/mmosh-pit/mmosh_backend/pkg/receipt/http"
 	subscriptionsHttp "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/http"
 	walletHttp "github.com/mmosh-pit/mmosh_backend/pkg/wallet/http"
-
-	stripeHttp "github.com/mmosh-pit/mmosh_backend/pkg/stripe/http"
 )
 
 var regexObjectID = `/^[a-f\d]{24}$/i`
@@ -93,7 +91,7 @@ var routes = []route{
 
 	newRoute("POST", "/send-bot-message", chatHttp.SendBotMessageHandler, false, false, false),
 
-	newRoute("POST", "/stripe-session", stripeHttp.GetStripeOnboardURLHandler, true, false, false),
+	// newRoute("POST", "/stripe-session", stripeHttp.GetStripeOnboardURLHandler, true, false, false),
 
 	newRoute("GET", "/available-themes", configHttp.GetAppThemesHandler, true, false, false),
 	newRoute("POST", "/theme", configHttp.CreateAppThemeHandler, true, false, false),

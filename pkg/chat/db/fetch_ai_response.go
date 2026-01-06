@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -29,39 +28,38 @@ type IncomingMessage struct {
 	Content string `json:"content"`
 }
 
-func formatChatHistory(messages []chatDomain.Message) []map[string]any {
-	var formattedHistory []map[string]any
-	for _, msg := range messages {
-		role := "assistant"
-		if msg.Type == "user" {
-			role = "user"
-		}
-
-		formattedMsg := map[string]any{
-			"role":      role,
-			"content":   msg.Content,
-			"timestamp": msg.CreatedAt,
-		}
-		formattedHistory = append(formattedHistory, formattedMsg)
-	}
-
-	return formattedHistory
-}
+// func formatChatHistory(messages []chatDomain.Message) []map[string]any {
+// 	var formattedHistory []map[string]any
+// 	for _, msg := range messages {
+// 		role := "assistant"
+// 		if msg.Type == "user" {
+// 			role = "user"
+// 		}
+//
+// 		formattedMsg := map[string]any{
+// 			"role":      role,
+// 			"content":   msg.Content,
+// 			"timestamp": msg.CreatedAt,
+// 		}
+// 		formattedHistory = append(formattedHistory, formattedMsg)
+// 	}
+//
+// 	return formattedHistory
+// }
 
 func FetchAIResponse(agentId *primitive.ObjectID, botId, text, systemPrompt, authToken string, chatId *primitive.ObjectID, namespaces []string, callbackChan chan string) {
 
-	messages := GetChatLastMessages(chatId)
+	parsedSystemPrompt := fmt.Sprintf("%sagentId: %s, authorization: %s", systemPrompt, agentId.Hex(), authToken)
 
 	data := map[string]any{
 		"query":        text,
 		"namespaces":   namespaces,
-		"instructions": systemPrompt,
-		"chatHistory":  formatChatHistory(messages),
-		"agentId":      agentId.Hex(),
-		"bot_id":       botId,
+		"instructions": parsedSystemPrompt,
+		// "chatHistory":  formatChatHistory(messages),
+		"agentId": agentId.Hex(),
+		"bot_id":  botId,
+		"aiModel": "gpt-5.1",
 	}
-
-	log.Printf("Sending request: %v\n", data)
 
 	encoded, err := json.Marshal(data)
 
@@ -101,35 +99,36 @@ func FetchAIResponse(agentId *primitive.ObjectID, botId, text, systemPrompt, aut
 	reader := bufio.NewReader(resp.Body)
 
 	defer resp.Body.Close()
+	log.Println("Going to receive request...")
 
 	for {
 		line, err := reader.ReadBytes('\n')
 
-		if err != nil {
-
-			log.Printf("Got info to send to client: %s\n", line)
-
+		if err == nil {
 			if len(line) > 0 {
-				callbackChan <- string(line)
+				if strings.Contains(string(line), "data") {
+					var message IncomingMessage
+
+					err = json.Unmarshal(line[6:], &message)
+
+					if err != nil {
+						log.Printf("Could not parse incoming message: %v\n", err)
+						continue
+					}
+
+					if message.Type == "chunk" || message.Type == "content" {
+						callbackChan <- message.Content
+					}
+				}
+			} else {
+				callbackChan <- "____break____"
+				break
 			}
 
+		} else {
 			callbackChan <- "____break____"
 			break
 		}
 
-		if strings.Contains(string(line), "data") {
-			var message IncomingMessage
-
-			err = json.Unmarshal(line[6:], &message)
-
-			if err != nil {
-				log.Printf("Could not parse incoming message: %v\n", err)
-				continue
-			}
-
-			if message.Type == "content" {
-				callbackChan <- message.Content
-			}
-		}
 	}
 }

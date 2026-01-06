@@ -65,7 +65,7 @@ func SendBotMessage(params SendBotMessageData) error {
 		ChatId:    bot.Id,
 	}
 
-	chatDb.SaveMessage(&messageData, messageData.ChatId)
+	chatDb.SaveMessage(&messageData, messageData.ChatId, bot.Key, params.Message, "")
 
 	client := WsPool.Clients[recipient.ID.Hex()]
 

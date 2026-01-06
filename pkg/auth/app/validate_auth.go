@@ -11,7 +11,7 @@ func ValidateAuth(token string, isAdmin bool) (string, bool) {
 		return "", false
 	}
 
-	if user.Role != "wizard" {
+	if user.Role != "wizard" && isAdmin {
 		return "", false
 	}
 

@@ -24,6 +24,7 @@ var (
 	kartraApiBase     string
 
 	aiApiUrl  string
+	aiBaseURL string
 	openAikey string
 
 	AppleAppStoreBundleId string
@@ -193,51 +194,56 @@ func ValidateEnvironmentVariables(path string) {
 		panic("NEXT_BACKEND_URL is missing")
 	}
 
-	foundStripeSecretToken, ok := os.LookupEnv("STRIPE_SECRET_KEY")
+	foundAIApiBase, ok := os.LookupEnv("AI_API_BASE")
 	if !ok {
-		panic("STRIPE_SECRET_KEY is not present")
+		panic("AI_API_BASE is missing")
 	}
 
-	foundStripeEndpointSecret, ok := os.LookupEnv("STRIPE_ENDPOINT_SECRET")
-	if !ok {
-		panic("STRIPE_ENDPOINT_SECRET is not present")
-	}
-	foundStripeMaxConsecutiveFailures, ok := os.LookupEnv("STRIPE_MAX_CONSECUTIVES_FAILURES")
-	if !ok {
-		panic("STRIPE_MAX_CONSECUTIVES_FAILURES is not present")
-	}
-	intStripeMaxConsecutiveFailures, err := strconv.Atoi(foundStripeMaxConsecutiveFailures)
-	if err != nil {
-		panic("Error during conversion of STRIPE_MAX_CONSECUTIVES_FAILURES env")
-	}
-	foundStripeCooldownInSec, ok := os.LookupEnv("STRIPE_COOLDOWN_IN_SEC")
-	if !ok {
-		panic("STRIPE_API_CLIENT_SECRET is not present")
-	}
-	intStripeCooldownInSec, err := strconv.Atoi(foundStripeCooldownInSec)
-	if err != nil {
-		panic("Error during conversion of STRIPE_COOLDOWN_IN_SEC env")
-	}
-	foundStripeWebhookSecret, ok := os.LookupEnv("STRIPE_WEBHOOK_SECRET")
-	if !ok {
-		panic("STRIPE_WEBHOOK_SECRET is not present")
-	}
-	foundStripeAccountOnboardingRefreshURL, ok := os.LookupEnv("STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL")
-	if !ok {
-		panic("STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL is not present")
-	}
-	foundStripeAccountOnboardingReturnURL, ok := os.LookupEnv("STRIPE_ACCOUNT_ONBOARDING_RETURN_URL")
-	if !ok {
-		panic("STRIPE_ACCOUNT_ONBOARDING_RETURN_URL is not present")
-	}
+	// foundStripeSecretToken, ok := os.LookupEnv("STRIPE_SECRET_KEY")
+	// if !ok {
+	// 	panic("STRIPE_SECRET_KEY is not present")
+	// }
+	//
+	// foundStripeEndpointSecret, ok := os.LookupEnv("STRIPE_ENDPOINT_SECRET")
+	// if !ok {
+	// 	panic("STRIPE_ENDPOINT_SECRET is not present")
+	// }
+	// foundStripeMaxConsecutiveFailures, ok := os.LookupEnv("STRIPE_MAX_CONSECUTIVES_FAILURES")
+	// if !ok {
+	// 	panic("STRIPE_MAX_CONSECUTIVES_FAILURES is not present")
+	// }
+	// intStripeMaxConsecutiveFailures, err := strconv.Atoi(foundStripeMaxConsecutiveFailures)
+	// if err != nil {
+	// 	panic("Error during conversion of STRIPE_MAX_CONSECUTIVES_FAILURES env")
+	// }
+	// foundStripeCooldownInSec, ok := os.LookupEnv("STRIPE_COOLDOWN_IN_SEC")
+	// if !ok {
+	// 	panic("STRIPE_API_CLIENT_SECRET is not present")
+	// }
+	// intStripeCooldownInSec, err := strconv.Atoi(foundStripeCooldownInSec)
+	// if err != nil {
+	// 	panic("Error during conversion of STRIPE_COOLDOWN_IN_SEC env")
+	// }
+	// foundStripeWebhookSecret, ok := os.LookupEnv("STRIPE_WEBHOOK_SECRET")
+	// if !ok {
+	// 	panic("STRIPE_WEBHOOK_SECRET is not present")
+	// }
+	// foundStripeAccountOnboardingRefreshURL, ok := os.LookupEnv("STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL")
+	// if !ok {
+	// 	panic("STRIPE_ACCOUNT_ONBOARDING_REFRESH_URL is not present")
+	// }
+	// foundStripeAccountOnboardingReturnURL, ok := os.LookupEnv("STRIPE_ACCOUNT_ONBOARDING_RETURN_URL")
+	// if !ok {
+	// 	panic("STRIPE_ACCOUNT_ONBOARDING_RETURN_URL is not present")
+	// }
 
-	stripeSecretKey = foundStripeSecretToken
-	stripeEndpointSecret = foundStripeEndpointSecret
-	stripeMaxConsecutiveFailures = int32(intStripeMaxConsecutiveFailures)
-	stripeCooldownPeriod = time.Duration(intStripeCooldownInSec) * time.Second
-	stripeWebhookSecret = foundStripeWebhookSecret
-	StripeAccountOnboardingRefreshURL = foundStripeAccountOnboardingRefreshURL
-	StripeAccountOnboardingReturnURL = foundStripeAccountOnboardingReturnURL
+	// stripeSecretKey = foundStripeSecretToken
+	// stripeEndpointSecret = foundStripeEndpointSecret
+	// stripeMaxConsecutiveFailures = int32(intStripeMaxConsecutiveFailures)
+	// stripeCooldownPeriod = time.Duration(intStripeCooldownInSec) * time.Second
+	// stripeWebhookSecret = foundStripeWebhookSecret
+	// StripeAccountOnboardingRefreshURL = foundStripeAccountOnboardingRefreshURL
+	// StripeAccountOnboardingReturnURL = foundStripeAccountOnboardingReturnURL
 
 	nextBackendUrl = foundNextBackendUrl
 
@@ -263,6 +269,7 @@ func ValidateEnvironmentVariables(path string) {
 
 	walletBackenUrl = foundWalletBackendUrl
 	aiApiUrl = foundAiApiUrl
+	aiBaseURL = foundAIApiBase
 	openAikey = foundOpenAiKey
 }
 
@@ -308,4 +315,8 @@ func GetOpenAIKey() string {
 
 func GetStripeVariable() string {
 	return stripeSecretKey
+}
+
+func GetAIBaseUrl() string {
+	return aiBaseURL
 }

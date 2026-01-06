@@ -17,8 +17,10 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 
 	id := primitive.NewObjectID()
 
-	chatDb.SaveMessage(message, message.ChatId)
-	chatDb.UpdateChatLastMessage(message)
+	chat, _ := chatDb.GetChatById(message.ChatId)
+
+	go chatDb.SaveMessage(message, message.ChatId, chat.Agent.Key, "", client.Token)
+	go chatDb.UpdateChatLastMessage(message)
 
 	index := randRange(0, 2)
 
@@ -57,15 +59,20 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 		ChatId:    message.ChatId,
 	}
 
-	chat, _ := chatDb.GetChatById(message.ChatId)
-
 	go chatDb.FetchAIResponse(message.AgentId, chat.Agent.Key, message.Content, message.SystemPrompt, client.Token, message.ChatId, message.Namespaces, textChan)
+	log.Println("Fetching...")
 
 	for {
 		text := <-textChan
 
 		if text == "____break____" {
 			close(textChan)
+			go func() {
+				log.Println("Saving...")
+				chatDb.SaveMessage(&generatedMessage, message.ChatId, chat.Agent.Key, message.Content, client.Token)
+				chatDb.UpdateChatLastMessage(&generatedMessage)
+			}()
+
 			break
 		}
 
@@ -88,9 +95,6 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 
 		client.sendResponse(data)
 	}
-
-	chatDb.SaveMessage(&generatedMessage, message.ChatId)
-	chatDb.UpdateChatLastMessage(&generatedMessage)
 }
 
 func randRange(min, max int) int {

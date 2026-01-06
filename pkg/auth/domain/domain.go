@@ -55,7 +55,7 @@ type AddReferrerParams struct {
 }
 
 type User struct {
-	ID             *primitive.ObjectID `json:"ID" bson:"_id,omitempty"`
+	ID             *primitive.ObjectID `bson:"_id,omitempty"`
 	UUID           string              `json:"uuid" bson:"uuid"`
 	Name           string              `bson:"name" json:"name"`
 	Email          string              `bson:"email" json:"email"`
@@ -68,7 +68,7 @@ type User struct {
 	Wallet         string              `json:"wallet" bson:"wallet"`
 	ReferredBy     string              `json:"referred_by" bson:"referred_by"`
 	OnboardingStep int                 `json:"onboarding_step" bson:"onboarding_step"`
-	CreatedAt      time.Time           `bson:"created_at"`
+	CreatedAt      time.Time           `bson:"created_at" json:"createdAt"`
 	Profile        Profile             `json:"profile" bson:"profile"`
 	ProfileNFT     string              `json:"profilenft" bson:"profilenft"`
 	Role           string              `json:"role" bson:"role"`
