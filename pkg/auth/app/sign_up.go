@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	authDb "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
 	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
@@ -72,12 +74,10 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 		ReferredBy: "",
 		UUID:       uuid.String(),
 		Wallet:     address,
-		GuestData: authDomain.GuestUserData{
-			Picture: "https://storage.googleapis.com/mmosh-assets/default.png",
-			Name:    params.Name,
-		},
-		Role:    "member",
-		FromBot: bot,
+		Picture:    "https://storage.googleapis.com/mmosh-assets/default.png",
+		Role:       "member",
+		FromBot:    bot,
+		CreatedAt:  time.Now(),
 	}
 
 	err = authDb.CreateUser(user)

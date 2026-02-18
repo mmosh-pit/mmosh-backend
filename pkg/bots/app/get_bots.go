@@ -17,7 +17,7 @@ func GetBots(userId, search string, page int) []botsDomain.Bot {
 		return []botsDomain.Bot{}
 	}
 
-	username := user.Profile.Username
+	username := user.Username
 
 	return bots.GetBots(search, username, int64(page), user.Role == "wizard")
 }

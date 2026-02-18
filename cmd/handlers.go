@@ -25,7 +25,7 @@ import (
 	walletHttp "github.com/mmosh-pit/mmosh_backend/pkg/wallet/http"
 )
 
-var regexObjectID = `/^[a-f\d]{24}$/i`
+var regexObjectID = `[0-9a-fA-F]{24}`
 
 var routes = []route{
 	newRoute("POST", "/early", authHttp.AddEarlyAccessHandler, false, false, false),
@@ -62,7 +62,6 @@ var routes = []route{
 	newRoute("GET", "/posts/author", postsHttp.HandlePostsByAuthor, true, false, false),
 	newRoute("GET", "/posts/slug", postsHttp.HandlePostBySlug, true, false, false),
 
-	newRoute("PUT", "/guest-data", authHttp.CreateGuestUserDataHandler, true, false, false),
 	newRoute("PUT", "/referred", authHttp.AddReferredToUserHandler, true, false, false),
 	newRoute("PUT", "/onboarding-step", authHttp.SetOnboardingStepHandler, true, false, false),
 
@@ -99,14 +98,16 @@ var routes = []route{
 	// ADMIN ROUTES
 
 	// USERS
+	newRoute("POST", "/admin/login", adminHttp.LoginHandler, false, false, false),
 	newRoute("GET", "/admin/users", adminHttp.GetAllUsersHandler, true, false, true),
-	newRoute("PATCH", fmt.Sprintf("/admin/user/(?P<userId>%s)/deactivate", regexObjectID), adminHttp.DeactivateUserHandler, true, false, true),
-	newRoute("PATCH", fmt.Sprintf("/admin/user/(?P<userId>%s)/activate", regexObjectID), adminHttp.DeactivateUserHandler, true, false, true),
+	newRoute("PATCH", fmt.Sprintf("/admin/user/(?P<userId>%s)", regexObjectID), adminHttp.UpdateUserHandler, true, false, true),
+	newRoute("PATCH", fmt.Sprintf("/admin/user/(?P<userId>%s)/reset-password", regexObjectID), adminHttp.DeactivateUserHandler, true, false, true),
 	newRoute("DELETE", fmt.Sprintf("/admin/user/(?P<userId>%s)/delete", regexObjectID), adminHttp.DeleteUserHandler, true, false, true),
-	// newRoute("PATCH", fmt.Sprintf("/admin/user/(?P<userId>%s)/deactivate", regexObjectID), , true, false, true),
+	newRoute("GET", "/admin/is-auth", authHttp.IsAuthHandler, true, false, false),
 
 	// BOTS
 	newRoute("GET", "/admin/bots", adminHttp.GetAllBotsHandler, true, false, true),
+	newRoute("PATCH", fmt.Sprintf("/admin/bots/(?P<botId>%s)", regexObjectID), adminHttp.UpdateBotHandler, true, false, true),
 }
 
 type route struct {

@@ -1,21 +1,27 @@
 package auth
 
 import (
-	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
+	"time"
+
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func AddUserGuestData(data auth.User, userId *primitive.ObjectID) error {
+func SaveLastLogin(id *primitive.ObjectID) {
 	client, ctx := config.GetMongoClient()
 	databaseName := config.GetDatabaseName()
 
 	collection := client.Database(databaseName).Collection("mmosh-users")
 
-	_, err := collection.UpdateByID(*ctx, userId, bson.D{{
-		Key: "$set", Value: data,
-	}})
+	filter := bson.D{{Key: "_id", Value: id}}
 
-	return err
+	update := bson.D{{
+		Key: "$set", Value: bson.D{{
+			Key:   "last_login",
+			Value: time.Now(),
+		}},
+	}}
+
+	collection.UpdateOne(*ctx, filter, update)
 }

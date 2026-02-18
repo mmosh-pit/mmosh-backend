@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func GetUserGuestData(userId *primitive.ObjectID) *auth.GuestUserData {
+func GetUserGuestData(userId *primitive.ObjectID) *auth.User {
 	client, ctx := config.GetMongoClient()
 	databaseName := config.GetDatabaseName()
 
@@ -23,5 +23,5 @@ func GetUserGuestData(userId *primitive.ObjectID) *auth.GuestUserData {
 		return nil
 	}
 
-	return &result.GuestData
+	return &result
 }

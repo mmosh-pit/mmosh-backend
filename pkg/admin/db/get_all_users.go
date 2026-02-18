@@ -25,6 +25,7 @@ func GetAllUsers(page int64, search string) *[]auth.User {
 			"_id":             1,
 			"name":            1,
 			"symbol":          1,
+			"email":           1,
 			"desc":            1,
 			"key":             1,
 			"image":           1,
@@ -32,6 +33,9 @@ func GetAllUsers(page int64, search string) *[]auth.User {
 			"privacy":         1,
 			"system_prompt":   1,
 			"type":            1,
+			"created_at":      1,
+			"last_login":      1,
+			"deactivated":     1,
 		},
 	).SetSort(bson.D{{
 		Key:   "profile.seniority",

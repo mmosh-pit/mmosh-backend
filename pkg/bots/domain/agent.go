@@ -1,6 +1,10 @@
 package bots
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Bot struct {
 	Id               *primitive.ObjectID `bson:"_id" json:"id"`
@@ -15,6 +19,8 @@ type Bot struct {
 	CreatorUsername  string              `bson:"creatorUsername" json:"creatorUsername"`
 	Type             string              `bson:"type" json:"type"`
 	DefaultModel     string              `bson:"defaultmodel" json:"defaultmodel"`
+	Deactivated      bool                `bson:"deactivated" json:"deactivated"`
+	CreatedAt        time.Time           `bson:"created_at" json:"createdAt"`
 }
 
 type ToggleActivateAgentData struct {
@@ -49,6 +55,7 @@ type CreateAgentData struct {
 	Code             string              `bson:"code" json:"code"`
 	Privacy          string              `bson:"privacy" json:"privacy"`
 	DefaultModel     string              `bson:"defaultmodel" json:"defaultmodel"`
+	CreatedAt        time.Time           `bson:"created_at" json:"createdAt"`
 }
 
 type Distribution struct {

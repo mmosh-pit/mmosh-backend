@@ -36,13 +36,7 @@ func SetDefaultChat(user *auth.User, bot string) {
 
 	id := primitive.NewObjectID()
 
-	userPicture := ""
-
-	if user.Profile.Image != "" {
-		userPicture = user.Profile.Image
-	} else if user.GuestData.Picture != "" {
-		userPicture = user.GuestData.Picture
-	}
+	userPicture := user.Picture
 
 	newChat := chat.Chat{
 		ID: &id,

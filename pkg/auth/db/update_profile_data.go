@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func UpdateProfileData(data auth.Profile, userId primitive.ObjectID) error {
+func UpdateProfileData(data auth.User, userId primitive.ObjectID) error {
 	client, ctx := config.GetMongoClient()
 	databaseName := config.GetDatabaseName()
 
@@ -17,10 +17,7 @@ func UpdateProfileData(data auth.Profile, userId primitive.ObjectID) error {
 	filter := bson.D{{Key: "_id", Value: userId}}
 
 	update := bson.D{{
-		Key: "$set", Value: bson.D{{
-			Key:   "profile",
-			Value: data,
-		}},
+		Key: "$set", Value: data,
 	}}
 
 	var newestUser auth.User
@@ -30,7 +27,7 @@ func UpdateProfileData(data auth.Profile, userId primitive.ObjectID) error {
 		Value: true,
 	}}}}, options.FindOne().SetSort(bson.D{{Key: "seniority", Value: -1}})).Decode(&newestUser)
 
-	data.Seniority = newestUser.Profile.Seniority
+	data.Seniority = newestUser.Seniority
 
 	_, err := collection.UpdateOne(*ctx, filter, update)
 

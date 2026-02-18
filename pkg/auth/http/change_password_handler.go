@@ -29,7 +29,7 @@ func ChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = authApp.ChangePassword(data)
 	if err != nil {
-		log.Printf("error request code: %v", err)
+		log.Printf("error changing password: %v", err)
 		common.SendErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}

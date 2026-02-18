@@ -1,4 +1,4 @@
-package auth
+package http
 
 import (
 	"encoding/json"
@@ -6,19 +6,12 @@ import (
 	"log"
 	"net/http"
 
-	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/app"
+	adminApp "github.com/mmosh-pit/mmosh_backend/pkg/admin/app"
 	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
 )
 
-func UpdateProfileDataHandler(w http.ResponseWriter, r *http.Request) {
-	userId := r.Header.Get("userId")
-
-	if userId == "" {
-		common.SendErrorResponse(w, http.StatusUnauthorized, "")
-		return
-	}
-
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("error reading payload: %v", err)
@@ -26,19 +19,21 @@ func UpdateProfileDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var data authDomain.User
+	var data authDomain.LoginParams
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		log.Printf("error decoding payload on signup: %v", err)
+		log.Printf("error decoding payload: %v", err)
 		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
 		return
 	}
 
-	err = auth.UpdateProfileData(data, userId)
-
+	response, err := adminApp.Login(data)
 	if err != nil {
-		log.Printf("error updating profile data: %v", err)
-		common.SendErrorResponse(w, http.StatusInternalServerError, err.Error())
+		log.Printf("error login: %v", err)
+		common.SendErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	log.Printf("Returning login: %v\n", *response.Token)
+	common.SendSuccessResponse(w, http.StatusOK, response)
 }

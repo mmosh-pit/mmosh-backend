@@ -27,7 +27,7 @@ func ForgotPasswordVerificationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = authApp.RequestCode(data.Email)
+	err = authApp.RequestCodeForForgotPassword(data.Email)
 	if err != nil {
 		log.Printf("error request code: %v", err)
 		common.SendErrorResponse(w, http.StatusBadRequest, err.Error())

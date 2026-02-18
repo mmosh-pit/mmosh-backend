@@ -6,19 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type UpdateProfileDataParams struct {
-	Symbol      string `json:"symbol"`
-	Bio         string `json:"bio"`
-	DisplayName string `json:"displayName"`
-	Username    string `json:"username"`
-	Name        string `json:"name"`
-	LastName    string `json:"lastName"`
-	Image       string `json:"image"`
-	Link        string `json:"link"`
-	Banner      string `json:"banner"`
-}
-
-func UpdateProfileData(params UpdateProfileDataParams, userId string) error {
+func UpdateProfileData(params authDomain.User, userId string) error {
 
 	userIdBson, err := primitive.ObjectIDFromHex(userId)
 
@@ -26,18 +14,7 @@ func UpdateProfileData(params UpdateProfileDataParams, userId string) error {
 		return err
 	}
 
-	profileData := authDomain.Profile{
-		Name:        params.Name,
-		LastName:    params.LastName,
-		DisplayName: params.DisplayName,
-		Username:    params.Username,
-		Bio:         params.Bio,
-		Image:       params.Image,
-		Symbol:      params.Symbol,
-		IsPrivate:   false,
-	}
-
-	err = authDb.UpdateProfileData(profileData, userIdBson)
+	err = authDb.UpdateProfileData(params, userIdBson)
 
 	authDb.UpdateUserOnboardingStatus(&userIdBson, 4)
 

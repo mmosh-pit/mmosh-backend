@@ -38,51 +38,43 @@ type AccountDeletionRequest struct {
 	Reason string `json:"reason" bson:"reason"`
 }
 
-type GuestUserData struct {
-	Picture     string `json:"picture"`
-	Banner      string `jsos:"banner"`
-	Name        string `json:"name"`
-	DisplayName string `json:"displayName"`
-	LastName    string `json:"lastName"`
-	Username    string `json:"username"`
-	Website     string `json:"website"`
-	Bio         string `json:"bio"`
-	Challenges  string `json:"challenges"`
-}
-
 type AddReferrerParams struct {
 	User string `json:"user"`
 }
 
-type User struct {
-	ID             *primitive.ObjectID `bson:"_id,omitempty"`
-	UUID           string              `json:"uuid" bson:"uuid"`
-	Name           string              `bson:"name" json:"name"`
-	Email          string              `bson:"email" json:"email"`
-	Password       string              `bson:"password" json:"password"`
-	Telegram       TelegramUserData    `bson:"telegram" json:"telegram"`
-	GuestData      GuestUserData       `bson:"guest_data" json:"guest_data"`
-	Sessions       []string            `bson:"sessions" json:"sessions"`
-	Bluesky        BlueskyUserData     `bson:"bluesky" json:"bluesky"`
-	Subscription   UserSubscription    `bson:"subscription" json:"subscription"`
-	Wallet         string              `json:"wallet" bson:"wallet"`
-	ReferredBy     string              `json:"referred_by" bson:"referred_by"`
-	OnboardingStep int                 `json:"onboarding_step" bson:"onboarding_step"`
-	CreatedAt      time.Time           `bson:"created_at" json:"createdAt"`
-	Profile        Profile             `json:"profile" bson:"profile"`
-	ProfileNFT     string              `json:"profilenft" bson:"profilenft"`
-	Role           string              `json:"role" bson:"role"`
-	FromBot        string              `bson:"from_bot"`
-	Deactivated    bool                `json:"deactivated" bson:"deactivated"`
+type WebsiteLink struct {
+	Link  string `json:"link" bson:"link"`
+	Order int    `json:"order" bson:"order"`
 }
 
-type Profile struct {
-	Name            string `json:"name" bson:"name"`
-	LastName        string `json:"lastName" bson:"lastName"`
-	DisplayName     string `json:"displayName" bson:"displayName"`
-	Username        string `json:"username" bson:"username"`
-	Bio             string `json:"bio" bson:"bio"`
-	Image           string `json:"image" bson:"image"`
+type User struct {
+	ID             *primitive.ObjectID `bson:"_id,omitempty"`
+	UUID           string              `json:"uuid" bson:"uuid, omitempty"`
+	Picture        string              `json:"picture"`
+	Banner         string              `jsos:"banner"`
+	Name           string              `json:"name"`
+	DisplayName    string              `json:"displayName"`
+	LastName       string              `json:"lastName"`
+	Username       string              `json:"username"`
+	Websites       []WebsiteLink       `json:"websites"`
+	Bio            string              `json:"bio"`
+	Challenges     string              `json:"challenges"`
+	Email          string              `bson:"email" json:"email"`
+	Password       string              `bson:"password,omitempty" json:"password"`
+	Telegram       TelegramUserData    `bson:"telegram,omitempty" json:"telegram"`
+	Sessions       []string            `bson:"sessions,omitempty" json:"sessions"`
+	Bluesky        BlueskyUserData     `bson:"bluesky,omitempty" json:"bluesky"`
+	Subscription   UserSubscription    `bson:"subscription,omitempty" json:"subscription"`
+	Wallet         string              `json:"wallet,omitempty" bson:"wallet"`
+	ReferredBy     string              `json:"referred_by,omitempty" bson:"referred_by"`
+	OnboardingStep int                 `json:"onboarding_step,omitempty" bson:"onboarding_step"`
+	CreatedAt      time.Time           `bson:"created_at,omitempty" json:"createdAt"`
+	LastLogin      time.Time           `bson:"last_login,omitempty" json:"lastLogin"`
+	ProfileNFT     string              `json:"profilenft,omitempty" bson:"profilenft"`
+	Role           string              `json:"role,omitempty" bson:"role"`
+	FromBot        string              `bson:"from_bot,omitempty"`
+	Deactivated    *bool               `json:"deactivated" bson:"deactivated,omitempty"`
+
 	Seniority       int    `json:"seniority" bson:"seniority"`
 	Symbol          string `json:"symbol" bson:"symbol"`
 	Link            string `json:"link" bson:"link"`
