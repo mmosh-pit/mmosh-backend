@@ -27,7 +27,7 @@ func ForgotPasswordVerification(email string) error {
 
 	log.Printf("Existing code: %v\n", existingCode)
 	if existingCode == nil {
-		from := mail.NewEmail("Kinship Bots", "security@kinshipbots.com")
+		from := mail.NewEmail("Kinship Bots", "security@kinship.today")
 		subject := "Verification Code"
 		to := mail.NewEmail("", email)
 		htmlContent := fmt.Sprintf("Hey there!<br /> Here's your code to reset your Password<br /> <strong>%d</strong>", code)

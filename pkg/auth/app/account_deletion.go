@@ -23,7 +23,7 @@ func AccountDeletion(params *authDomain.AccountDeletionRequest) error {
 	if res == 0 {
 		client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
 
-		from := mail.NewEmail("Kinship Bots", "security@kinshipbots.com")
+		from := mail.NewEmail("Kinship Bots", "security@kinship.today")
 		subject := "Account Deletion Request"
 		to := mail.NewEmail("", "elias.ramirez@kinship.systems")
 		htmlContent := fmt.Sprintf("Hey there!<br /> Someone requested to delete their account, please checkout database to see the following record<br /> <strong>%s</strong> <br/ > The reason is: %s", params.Email, params.Reason)
