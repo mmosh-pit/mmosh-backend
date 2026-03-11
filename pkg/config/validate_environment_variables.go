@@ -52,6 +52,8 @@ var (
 	stripeWebhookSecret               string
 	StripeAccountOnboardingRefreshURL string
 	StripeAccountOnboardingReturnURL  string
+
+	anthropicKey string
 )
 
 func ValidateEnvironmentVariables(path string) {
@@ -199,6 +201,11 @@ func ValidateEnvironmentVariables(path string) {
 		panic("AI_API_BASE is missing")
 	}
 
+	foundAnthropicKey, ok := os.LookupEnv("ANTHROPIC_KEY")
+	if !ok {
+		panic("ANTHROPIC_KEY is missing")
+	}
+
 	// foundStripeSecretToken, ok := os.LookupEnv("STRIPE_SECRET_KEY")
 	// if !ok {
 	// 	panic("STRIPE_SECRET_KEY is not present")
@@ -271,6 +278,7 @@ func ValidateEnvironmentVariables(path string) {
 	aiApiUrl = foundAiApiUrl
 	aiBaseURL = foundAIApiBase
 	openAikey = foundOpenAiKey
+	anthropicKey = foundAnthropicKey
 }
 
 func GetMongoURI() *string {
@@ -319,4 +327,8 @@ func GetStripeVariable() string {
 
 func GetAIBaseUrl() string {
 	return aiBaseURL
+}
+
+func GetAnthropicKey() string {
+	return anthropicKey
 }

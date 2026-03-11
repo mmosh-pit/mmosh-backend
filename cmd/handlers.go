@@ -108,6 +108,8 @@ var routes = []route{
 	// BOTS
 	newRoute("GET", "/admin/bots", adminHttp.GetAllBotsHandler, true, false, true),
 	newRoute("PATCH", fmt.Sprintf("/admin/bots/(?P<botId>%s)", regexObjectID), adminHttp.UpdateBotHandler, true, false, true),
+
+	newRoute("POST", "/api/chat", chatHttp.ClaudeHandler, true, false, false),
 }
 
 type route struct {
