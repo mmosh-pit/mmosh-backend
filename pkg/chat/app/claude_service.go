@@ -13,7 +13,7 @@ import (
 )
 
 // Service calls the Claude API to interpret the user's message and decide
-// which Twitter action (if any) should be performed.
+// which browser action (if any) should be performed.
 type Service struct {
 	client anthropic.Client
 }
@@ -29,12 +29,12 @@ func (s *Service) Chat(ctx context.Context, req *domain.ChatRequest) (*domain.Ch
 
 	resp, err := s.client.Messages.New(ctx, anthropic.MessageNewParams{
 		Model:     anthropic.ModelClaudeSonnet4_6,
-		MaxTokens: 1024,
+		MaxTokens: 2048,
 		System: []anthropic.TextBlockParam{
 			{Text: buildSystemPrompt(req.PageContext)},
 		},
 		Messages: messages,
-		Tools:    twitterTools(),
+		Tools:    browserTools(),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("claude api: %w", err)
@@ -55,7 +55,6 @@ func buildMessages(req *domain.ChatRequest) []anthropic.MessageParam {
 				msgs = append(msgs, anthropic.NewAssistantMessage(anthropic.NewTextBlock(h.Content)))
 			}
 		}
-
 	}
 	msgs = append(msgs, anthropic.NewUserMessage(anthropic.NewTextBlock(req.Message)))
 	return msgs
@@ -66,114 +65,211 @@ func buildMessages(req *domain.ChatRequest) []anthropic.MessageParam {
 func buildSystemPrompt(ctx domain.PageContext) string {
 	var sb strings.Builder
 
-	sb.WriteString("You are Kinship, an AI assistant that helps users interact with X (Twitter). ")
-	sb.WriteString("You can perform actions on the page on behalf of the user: post tweets, reply to tweets, like tweets, retweet, and navigate to URLs on X.\n\n")
-	sb.WriteString(fmt.Sprintf("Current page URL: %s\n", ctx.URL))
-	sb.WriteString(fmt.Sprintf("Page type: %s\n", ctx.PageType))
+	sb.WriteString("You are Kinship, an AI browser assistant that can interact with any website on behalf of the user. ")
+	sb.WriteString("You can read the current page and perform actions like clicking buttons, filling forms, navigating, scrolling, and more.\n\n")
 
-	if len(ctx.Tweets) > 0 {
-		sb.WriteString(fmt.Sprintf("\nVisible tweets (%d total):\n", len(ctx.Tweets)))
-		for i, t := range ctx.Tweets {
-			sb.WriteString(fmt.Sprintf("  [%d] @%s — %q  (url: %s)\n", i+1, t.Handle, t.Text, t.URL))
-		}
-	} else {
-		sb.WriteString("\nNo tweets are visible on the current page.\n")
+	sb.WriteString(fmt.Sprintf("Current page URL: %s\n", ctx.URL))
+	if ctx.Title != "" {
+		sb.WriteString(fmt.Sprintf("Page title: %s\n", ctx.Title))
 	}
 
-	sb.WriteString("\nWhen the user asks you to perform an action, call the matching tool AND include a short, friendly text explanation of what you are doing. ")
-	sb.WriteString("If no action is needed, just reply conversationally.")
+	if len(ctx.InteractiveElements) > 0 {
+		sb.WriteString(fmt.Sprintf("\nInteractive elements on page (%d total):\n", len(ctx.InteractiveElements)))
+		for i, el := range ctx.InteractiveElements {
+			line := fmt.Sprintf("  [%d] type=%s selector=%q", i+1, el.Type, el.Selector)
+			if el.Text != "" {
+				line += fmt.Sprintf(" text=%q", el.Text)
+			}
+			if el.AriaLabel != "" {
+				line += fmt.Sprintf(" aria-label=%q", el.AriaLabel)
+			}
+			if el.Placeholder != "" {
+				line += fmt.Sprintf(" placeholder=%q", el.Placeholder)
+			}
+			if el.Value != "" {
+				line += fmt.Sprintf(" value=%q", el.Value)
+			}
+			if el.Href != "" {
+				line += fmt.Sprintf(" href=%q", el.Href)
+			}
+			sb.WriteString(line + "\n")
+		}
+	} else {
+		sb.WriteString("\nNo interactive elements detected on this page.\n")
+	}
+
+	if ctx.PageText != "" {
+		sb.WriteString("\nVisible page text (truncated):\n")
+		text := ctx.PageText
+		if len(text) > 1500 {
+			text = text[:1500] + "…"
+		}
+		sb.WriteString(text + "\n")
+	}
+
+	sb.WriteString("\nGuidelines:\n")
+	sb.WriteString("- Always use the exact selector strings from the element list above when targeting elements.\n")
+	sb.WriteString("- For multi-step tasks (e.g. fill a form and submit), use the execute_steps tool to batch all actions.\n")
+	sb.WriteString("- Always include a short, friendly text explanation of what you are doing.\n")
+	sb.WriteString("- If you cannot complete a task because the required element is not visible, explain why and suggest what the user should do.\n")
+	sb.WriteString("- If no action is needed, just reply conversationally.")
 
 	return sb.String()
 }
 
 // ─── Tool definitions ─────────────────────────────────────────────────────────
 
-func twitterTools() []anthropic.ToolUnionParam {
+func browserTools() []anthropic.ToolUnionParam {
 	return []anthropic.ToolUnionParam{
 		{OfTool: &anthropic.ToolParam{
-			Name:        "post_tweet",
-			Description: anthropic.String("Post a new tweet on behalf of the user."),
+			Name:        "click",
+			Description: anthropic.String("Click an element on the page. Use 'selector' (CSS selector from the element list) or 'text' (visible text to find the element by)."),
 			InputSchema: anthropic.ToolInputSchemaParam{
 				Properties: map[string]any{
-					"text": map[string]any{
+					"selector": map[string]any{
 						"type":        "string",
-						"description": "The text content of the tweet (max 280 characters).",
-					},
-				},
-				Required: []string{"text"},
-			},
-		}},
-		{OfTool: &anthropic.ToolParam{
-			Name:        "reply_to_tweet",
-			Description: anthropic.String("Reply to an existing tweet."),
-			InputSchema: anthropic.ToolInputSchemaParam{
-				Properties: map[string]any{
-					"tweet_url": map[string]any{
-						"type":        "string",
-						"description": "The full URL of the tweet to reply to.",
+						"description": "CSS selector of the element to click.",
 					},
 					"text": map[string]any{
 						"type":        "string",
-						"description": "The reply text (max 280 characters).",
+						"description": "Visible text of the element to click (used if selector is not provided).",
 					},
 				},
-				Required: []string{"tweet_url", "text"},
 			},
 		}},
 		{OfTool: &anthropic.ToolParam{
-			Name:        "delete_tweet",
-			Description: anthropic.String("Delete a tweet."),
+			Name:        "type_text",
+			Description: anthropic.String("Type text into an input, textarea, or contenteditable element."),
 			InputSchema: anthropic.ToolInputSchemaParam{
 				Properties: map[string]any{
-					"tweet_url": map[string]any{
+					"selector": map[string]any{
 						"type":        "string",
-						"description": "The full URL of the tweet to reply to.",
+						"description": "CSS selector of the input element.",
 					},
 					"text": map[string]any{
 						"type":        "string",
-						"description": "The reply text (max 280 characters).",
+						"description": "The text to type into the element.",
 					},
 				},
-				Required: []string{"tweet_url", "text"},
+				Required: []string{"selector", "text"},
 			},
 		}},
 		{OfTool: &anthropic.ToolParam{
-			Name:        "like_tweet",
-			Description: anthropic.String("Like a tweet."),
+			Name:        "clear_field",
+			Description: anthropic.String("Clear the value of an input or textarea element."),
 			InputSchema: anthropic.ToolInputSchemaParam{
 				Properties: map[string]any{
-					"tweet_url": map[string]any{
+					"selector": map[string]any{
 						"type":        "string",
-						"description": "The full URL of the tweet to like.",
+						"description": "CSS selector of the field to clear.",
 					},
 				},
-				Required: []string{"tweet_url"},
+				Required: []string{"selector"},
 			},
 		}},
 		{OfTool: &anthropic.ToolParam{
-			Name:        "retweet",
-			Description: anthropic.String("Retweet a tweet."),
+			Name:        "select_option",
+			Description: anthropic.String("Select an option from a <select> dropdown by its text or value."),
 			InputSchema: anthropic.ToolInputSchemaParam{
 				Properties: map[string]any{
-					"tweet_url": map[string]any{
+					"selector": map[string]any{
 						"type":        "string",
-						"description": "The full URL of the tweet to retweet.",
+						"description": "CSS selector of the <select> element.",
+					},
+					"value": map[string]any{
+						"type":        "string",
+						"description": "The option text or value to select.",
 					},
 				},
-				Required: []string{"tweet_url"},
+				Required: []string{"selector", "value"},
 			},
 		}},
 		{OfTool: &anthropic.ToolParam{
-			Name:        "navigate",
-			Description: anthropic.String("Navigate the browser to a URL on X.com (e.g. a user profile, notifications, or a specific tweet)."),
+			Name:        "scroll_to",
+			Description: anthropic.String("Scroll the page to a specific element or Y position."),
+			InputSchema: anthropic.ToolInputSchemaParam{
+				Properties: map[string]any{
+					"selector": map[string]any{
+						"type":        "string",
+						"description": "CSS selector of the element to scroll into view. If omitted, scrolls to the Y coordinate.",
+					},
+					"y": map[string]any{
+						"type":        "number",
+						"description": "Vertical scroll position in pixels (used when no selector is provided).",
+					},
+				},
+			},
+		}},
+		{OfTool: &anthropic.ToolParam{
+			Name:        "press_key",
+			Description: anthropic.String("Press a keyboard key, optionally on a specific element. Useful for submitting forms (Enter), closing dialogs (Escape), or tabbing between fields."),
+			InputSchema: anthropic.ToolInputSchemaParam{
+				Properties: map[string]any{
+					"key": map[string]any{
+						"type":        "string",
+						"description": "Key name, e.g. 'Enter', 'Escape', 'Tab', 'ArrowDown'.",
+					},
+					"selector": map[string]any{
+						"type":        "string",
+						"description": "CSS selector of the element to dispatch the key event on. Defaults to the currently focused element.",
+					},
+				},
+				Required: []string{"key"},
+			},
+		}},
+		{OfTool: &anthropic.ToolParam{
+			Name:        "hover_element",
+			Description: anthropic.String("Hover the mouse over an element to reveal tooltips or dropdown menus."),
+			InputSchema: anthropic.ToolInputSchemaParam{
+				Properties: map[string]any{
+					"selector": map[string]any{
+						"type":        "string",
+						"description": "CSS selector of the element to hover.",
+					},
+					"text": map[string]any{
+						"type":        "string",
+						"description": "Visible text of the element to hover (used if selector is not provided).",
+					},
+				},
+			},
+		}},
+		{OfTool: &anthropic.ToolParam{
+			Name:        "navigate_to",
+			Description: anthropic.String("Navigate the browser to a URL."),
 			InputSchema: anthropic.ToolInputSchemaParam{
 				Properties: map[string]any{
 					"url": map[string]any{
 						"type":        "string",
-						"description": "The X.com URL to navigate to.",
+						"description": "The full URL to navigate to.",
 					},
 				},
 				Required: []string{"url"},
+			},
+		}},
+		{OfTool: &anthropic.ToolParam{
+			Name:        "execute_steps",
+			Description: anthropic.String("Execute multiple browser actions in sequence. Use this for multi-step tasks like filling a form and submitting it, or performing a series of clicks."),
+			InputSchema: anthropic.ToolInputSchemaParam{
+				Properties: map[string]any{
+					"steps": map[string]any{
+						"type":        "array",
+						"description": "Ordered list of actions to perform.",
+						"items": map[string]any{
+							"type": "object",
+							"properties": map[string]any{
+								"action":   map[string]any{"type": "string", "description": "Action type: click, type_text, clear_field, select_option, scroll_to, press_key, hover_element, navigate_to."},
+								"selector": map[string]any{"type": "string", "description": "CSS selector."},
+								"text":     map[string]any{"type": "string", "description": "Text to type or element text to find."},
+								"value":    map[string]any{"type": "string", "description": "Option value for select_option."},
+								"url":      map[string]any{"type": "string", "description": "URL for navigate_to."},
+								"key":      map[string]any{"type": "string", "description": "Key name for press_key."},
+								"y":        map[string]any{"type": "number", "description": "Y position for scroll_to."},
+							},
+							"required": []string{"action"},
+						},
+					},
+				},
+				Required: []string{"steps"},
 			},
 		}},
 	}
@@ -183,16 +279,15 @@ func twitterTools() []anthropic.ToolUnionParam {
 
 func parseResponse(resp *anthropic.Message, conversationID string) (*domain.ChatResponse, error) {
 	var textParts []string
-	var action *domain.TwitterAction
+	var action *domain.BrowserAction
 
 	for _, block := range resp.Content {
 		switch block.Type {
 		case "text":
 			textParts = append(textParts, block.Text)
 		case "tool_use":
-			// Only capture the first tool call
 			if action == nil {
-				a, err := toolUseToAction(block.Name, block.Input)
+				a, err := toolUseToBrowserAction(block.Name, block.Input)
 				if err == nil {
 					action = a
 				}
@@ -212,32 +307,82 @@ func parseResponse(resp *anthropic.Message, conversationID string) (*domain.Chat
 	}, nil
 }
 
-// toolUseToAction converts a Claude tool_use block into a TwitterAction.
-// block.Input is json.RawMessage — the parsed tool arguments from Claude.
-func toolUseToAction(name string, rawInput json.RawMessage) (*domain.TwitterAction, error) {
-	var params map[string]string
-	if err := json.Unmarshal(rawInput, &params); err != nil {
+// toolUseToBrowserAction maps a Claude tool_use block to a BrowserAction.
+func toolUseToBrowserAction(name string, rawInput json.RawMessage) (*domain.BrowserAction, error) {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(rawInput, &raw); err != nil {
 		return nil, fmt.Errorf("unmarshal tool input: %w", err)
 	}
 
-	action := &domain.TwitterAction{Type: name}
+	actionType := map[string]string{
+		"click":         "click",
+		"type_text":     "type",
+		"clear_field":   "clear",
+		"select_option": "select_option",
+		"scroll_to":     "scroll",
+		"press_key":     "press_key",
+		"hover_element": "hover",
+		"navigate_to":   "navigate",
+		"execute_steps": "steps",
+	}[name]
 
-	text, hasText := params["text"]
-	tweetURL, hasTweetURL := params["tweet_url"]
-	url, hasURL := params["url"]
+	if actionType == "" {
+		return nil, fmt.Errorf("unknown tool: %s", name)
+	}
 
-	if hasText || hasTweetURL || hasURL {
-		action.Params = &domain.ActionParams{}
-		if hasText {
-			action.Params.Text = &text
+	params := &domain.ActionParams{}
+
+	if v, ok := raw["selector"]; ok {
+		var s string
+		if json.Unmarshal(v, &s) == nil {
+			params.Selector = &s
 		}
-		if hasTweetURL {
-			action.Params.TweetURL = &tweetURL
+	}
+	if v, ok := raw["text"]; ok {
+		var s string
+		if json.Unmarshal(v, &s) == nil {
+			params.Text = &s
 		}
-		if hasURL {
-			action.Params.URL = &url
+	}
+	if v, ok := raw["value"]; ok {
+		var s string
+		if json.Unmarshal(v, &s) == nil {
+			params.Value = &s
+		}
+	}
+	if v, ok := raw["url"]; ok {
+		var s string
+		if json.Unmarshal(v, &s) == nil {
+			params.URL = &s
+		}
+	}
+	if v, ok := raw["key"]; ok {
+		var s string
+		if json.Unmarshal(v, &s) == nil {
+			params.Key = &s
+		}
+	}
+	if v, ok := raw["x"]; ok {
+		var f float64
+		if json.Unmarshal(v, &f) == nil {
+			params.X = &f
+		}
+	}
+	if v, ok := raw["y"]; ok {
+		var f float64
+		if json.Unmarshal(v, &f) == nil {
+			params.Y = &f
+		}
+	}
+	if v, ok := raw["steps"]; ok {
+		var steps []domain.BrowserStep
+		if json.Unmarshal(v, &steps) == nil {
+			params.Steps = steps
 		}
 	}
 
-	return action, nil
+	return &domain.BrowserAction{
+		Type:   actionType,
+		Params: params,
+	}, nil
 }
