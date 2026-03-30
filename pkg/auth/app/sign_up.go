@@ -10,7 +10,6 @@ import (
 	chatDb "github.com/mmosh-pit/mmosh_backend/pkg/chat/db"
 	commonApp "github.com/mmosh-pit/mmosh_backend/pkg/common/app"
 	commonDomain "github.com/mmosh-pit/mmosh_backend/pkg/common/domain"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type SignUpResponse struct {
@@ -21,7 +20,7 @@ type SignUpResponse struct {
 func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 	existingUser, err := authDb.GetUserByEmail(params.Email)
 
-	if err == nil && existingUser.ID != nil {
+	if err == nil && existingUser.ID != "" {
 		return nil, authDomain.ErrUserAlreadyExists
 	}
 
@@ -55,9 +54,7 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 		return nil, err
 	}
 
-	uuid, _ := uuid.NewRandom()
-
-	id := primitive.NewObjectID()
+	userUUID, _ := uuid.NewRandom()
 
 	bot := params.FromBot
 
@@ -66,13 +63,12 @@ func SignUp(params *authDomain.SignUpParams) (*SignUpResponse, error) {
 	}
 
 	user := &authDomain.User{
-		ID:         &id,
 		Name:       params.Name,
 		Email:      params.Email,
 		Password:   password,
 		Sessions:   []string{*token},
 		ReferredBy: "",
-		UUID:       uuid.String(),
+		UUID:       userUUID.String(),
 		Wallet:     address,
 		Picture:    "https://storage.googleapis.com/mmosh-assets/default.png",
 		Role:       "member",

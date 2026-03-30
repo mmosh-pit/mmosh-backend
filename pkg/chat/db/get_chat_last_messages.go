@@ -1,50 +1,47 @@
 package chat
 
 import (
+	"context"
 	"log"
+	"time"
 
-	chat "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
+	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func GetChatLastMessages(chatId *primitive.ObjectID) []chat.Message {
+func GetChatLastMessages(chatId string) []chatDomain.Message {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	result := []chatDomain.Message{}
 
-	collection := client.Database(databaseName).Collection("chats")
-
-	opts := options.Find().SetLimit(20).SetSort(bson.D{{
-		Key:   "created_at",
-		Value: -1,
-	}})
-
-	var result = []chat.Message{}
-
-	res, err := collection.Find(*ctx, bson.D{{
-		Key:   "_id",
-		Value: chatId,
-	}}, opts)
+	rows, err := pool.Query(ctx,
+		`SELECT id, content, type, created_at, sender, agent_id, chat_id
+		 FROM messages
+		 WHERE chat_id = $1
+		 ORDER BY created_at DESC
+		 LIMIT 20`,
+		chatId,
+	)
 
 	if err != nil {
 		log.Printf("[GET CHAT LAST MESSAGES] Got error here: %v\n", err)
 		return result
 	}
+	defer rows.Close()
 
-	for res.Next(*ctx) {
-		var bot chat.Message
+	for rows.Next() {
+		var msg chatDomain.Message
+		var createdAt time.Time
 
-		if err := res.Decode(&bot); err != nil {
+		if err := rows.Scan(&msg.ID, &msg.Content, &msg.Type, &createdAt, &msg.Sender, &msg.AgentId, &msg.ChatId); err != nil {
 			log.Printf("[GET CHAT LAST MESSAGES] Error decoding message: %v\n", err)
 			continue
 		}
 
-		result = append(result, bot)
+		msg.CreatedAt = createdAt
+		result = append(result, msg)
 	}
 
 	return result
-
 }

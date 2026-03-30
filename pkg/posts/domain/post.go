@@ -3,27 +3,18 @@ package posts
 import (
 	"strings"
 	"time"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Post struct {
-	ID primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-
-	Header string `bson:"header" json:"header"`
-
-	SubHeader string `bson:"subHeader,omitempty" json:"subHeader,omitempty"`
-
-	Tags []string `bson:"tags,omitempty" json:"tags,omitempty"`
-
-	Authors []string `bson:"authors" json:"authors"`
-
-	Body string `bson:"body" json:"body"`
-
-	Slug string `bson:"slug" json:"slug"`
-
-	CreatedAt time.Time `bson:"createdAt" json:"createdAt,omitempty"`
-	UpdatedAt time.Time `bson:"updatedAt" json:"updatedAt,omitempty"`
+	ID        string    `json:"id,omitempty"`
+	Header    string    `json:"header"`
+	SubHeader string    `json:"subHeader,omitempty"`
+	Tags      []string  `json:"tags,omitempty"`
+	Authors   []string  `json:"authors"`
+	Body      string    `json:"body"`
+	Slug      string    `json:"slug"`
+	CreatedAt time.Time `json:"createdAt,omitempty"`
+	UpdatedAt time.Time `json:"updatedAt,omitempty"`
 }
 
 func (p *Post) Validate() bool {

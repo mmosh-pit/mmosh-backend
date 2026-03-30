@@ -6,13 +6,13 @@ import (
 )
 
 func SaveEarlyAccess(params auth.AddEarlyAccessParams) error {
+	pool := config.GetPool()
+	ctx := getContext()
 
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
-
-	collection := client.Database(databaseName).Collection("early-access")
-
-	_, err := collection.InsertOne(*ctx, params)
+	_, err := pool.Exec(ctx,
+		`INSERT INTO early_access (name, email) VALUES ($1, $2) ON CONFLICT (email) DO NOTHING`,
+		params.Name, params.Email,
+	)
 
 	return err
 }

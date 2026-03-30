@@ -1,15 +1,17 @@
 package bots
 
 import (
+	"context"
+
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func DeactivateAgent(userId, agentId string) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("mmosh-app-activated-agents")
-
-	_, _ = collection.DeleteOne(*ctx, bson.D{{Key: "agentId", Value: agentId}, {Key: "userId", Value: userId}})
+	pool.Exec(ctx,
+		`DELETE FROM activated_agents WHERE user_id = $1 AND agent_id = $2`,
+		userId, agentId,
+	)
 }

@@ -3,21 +3,18 @@ package auth
 import (
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func GetUserGuestData(userId *primitive.ObjectID) *auth.User {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func GetUserGuestData(userId string) *auth.User {
+	pool := config.GetPool()
+	ctx := getContext()
 
-	var result auth.User
+	row := pool.QueryRow(ctx,
+		`SELECT `+selectUserColumns+` FROM users WHERE id = $1`,
+		userId,
+	)
 
-	collection := client.Database(databaseName).Collection("mmosh-users")
-
-	res := collection.FindOne(*ctx, bson.D{{Key: "_id", Value: userId}})
-
-	err := res.Decode(&result)
+	result, err := scanUser(row)
 
 	if err != nil {
 		return nil

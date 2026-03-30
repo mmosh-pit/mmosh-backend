@@ -2,6 +2,7 @@ package chat
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,39 +10,32 @@ import (
 	"net/http"
 	"time"
 
-	chat "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
+	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func SaveMessage(message *chat.Message, chatId *primitive.ObjectID, chatAgentKey string, userContent string, authToken string) error {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func SaveMessage(message *chatDomain.Message, chatAgentKey string, userContent string, authToken string) error {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("chats")
-
-	filter := bson.D{{Key: "_id", Value: chatId}}
-
-	update := bson.D{{Key: "$push", Value: bson.D{{Key: "messages", Value: message}}}}
-
-	// update := bson.M{"$push": bson.M{"messages": message}}
-
-	_, err := collection.UpdateOne(*ctx, filter, update)
+	_, err := pool.Exec(ctx,
+		`INSERT INTO messages (chat_id, content, type, created_at, sender, agent_id)
+		 VALUES ($1, $2, $3, $4, $5, $6)`,
+		message.ChatId, message.Content, message.Type, time.Now(), message.Sender, message.AgentId,
+	)
 
 	if err != nil {
 		log.Printf("Error trying to save message: %v\n", err)
 	}
 
 	data := map[string]any{
-		"chatId":       chatId.Hex(),
+		"chatId":       message.ChatId,
 		"namespaces":   []string{chatAgentKey, "PUBLIC"},
 		"systemPrompt": message.SystemPrompt,
-		// "chatHistory":  formatChatHistory(messages),
-		"agentID":     message.AgentId.Hex(),
-		"aiModel":     "gpt-5.1",
-		"botContent":  message.Content,
-		"userContent": userContent,
+		"agentID":      message.AgentId,
+		"aiModel":      "gpt-5.1",
+		"botContent":   message.Content,
+		"userContent":  userContent,
 	}
 
 	encoded, err := json.Marshal(data)
@@ -52,10 +46,13 @@ func SaveMessage(message *chat.Message, chatId *primitive.ObjectID, chatAgentKey
 	}
 
 	baseUrl := config.GetAIBaseUrl()
-
 	url := fmt.Sprintf("%s/save-chat", baseUrl)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(encoded))
+	if err != nil {
+		log.Printf("[SAVE MESSAGE] Error creating request: %v\n", err)
+		return err
+	}
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", authToken))
@@ -71,7 +68,6 @@ func SaveMessage(message *chat.Message, chatId *primitive.ObjectID, chatAgentKey
 	}
 
 	body, err := io.ReadAll(resp.Body)
-
 	log.Printf("[SAVE MESSAGE] response: %v\n", string(body))
 
 	return nil

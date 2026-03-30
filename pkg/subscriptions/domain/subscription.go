@@ -1,12 +1,10 @@
 package subscriptions
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
-
 type Subscription struct {
-	ID        primitive.ObjectID `bson:"_id" json:"id"`
-	Name      string             `bson:"name" json:"name"`
-	Tier      int                `bson:"tier" json:"tier"`
-	ProductId string             `bson:"product_id" json:"product_id"`
-	Platform  string             `bson:"platform" json:"platform"`
-	Benefits  []string           `bson:"benefits" json:"benefits"`
+	ID        string   `json:"id"`
+	Name      string   `json:"name"`
+	Tier      int      `json:"tier"`
+	ProductId string   `json:"product_id"`
+	Platform  string   `json:"platform"`
+	Benefits  []string `json:"benefits"`
 }

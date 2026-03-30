@@ -1,12 +1,10 @@
 package auth
 
 import (
-	"log"
 	"net/http"
 
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func DeleteTelegramHandler(w http.ResponseWriter, r *http.Request) {
@@ -17,15 +15,7 @@ func DeleteTelegramHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userIdBson, err := primitive.ObjectIDFromHex(userId)
-
-	if err != nil {
-		log.Printf("error transforming to Object ID bluesky: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
-		return
-	}
-
-	auth.DeleteTelegramData(userIdBson)
+	auth.DeleteTelegramData(userId)
 
 	common.SendSuccessResponse(w, http.StatusOK, nil)
 }

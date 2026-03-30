@@ -1,25 +1,26 @@
 package bots
 
 import (
+	"context"
 	"errors"
 
 	agentsDomain "github.com/mmosh-pit/mmosh_backend/pkg/bots/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/jackc/pgx/v5"
 )
 
 func GetActivatedAgent(userId, agentId string) (*agentsDomain.ActivatedAgent, error) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
-
-	collection := client.Database(databaseName).Collection("mmosh-app-activated-agents")
+	pool := config.GetPool()
+	ctx := context.Background()
 
 	var res agentsDomain.ActivatedAgent
 
-	err := collection.FindOne(*ctx, bson.D{{Key: "userId", Value: userId}, {Key: "agentId", Value: agentId}}).Decode(&res)
+	err := pool.QueryRow(ctx,
+		`SELECT user_id, agent_id FROM activated_agents WHERE user_id = $1 AND agent_id = $2`,
+		userId, agentId,
+	).Scan(&res.UserId, &res.AgentId)
 
-	if errors.Is(err, mongo.ErrNoDocuments) {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	}
 

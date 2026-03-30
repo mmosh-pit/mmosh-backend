@@ -1,13 +1,13 @@
 package chat
 
 import (
+	"fmt"
 	"log"
 	"math/rand/v2"
 	"time"
 
 	chatDb "github.com/mmosh-pit/mmosh_backend/pkg/chat/db"
 	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
@@ -15,23 +15,23 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 
 	textChan := make(chan string)
 
-	id := primitive.NewObjectID()
+	tempId := fmt.Sprintf("%d", time.Now().UnixNano())
 
 	chat, _ := chatDb.GetChatById(message.ChatId)
 
-	go chatDb.SaveMessage(message, message.ChatId, chat.Agent.Key, "", client.Token)
+	go chatDb.SaveMessage(message, chat.Agent.Key, "", client.Token)
 	go chatDb.UpdateChatLastMessage(message)
 
 	index := randRange(0, 2)
 
 	senderId := botParticipantUsers[index].ID
 
-	if message.AgentId != nil {
+	if message.AgentId != "" {
 		senderId = message.AgentId
 	}
 
 	loadingMessage := chatDomain.Message{
-		ID:        &id,
+		ID:        tempId,
 		Content:   "",
 		Type:      "bot",
 		Sender:    senderId,
@@ -50,7 +50,7 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 	createdDate := time.Now()
 
 	generatedMessage := chatDomain.Message{
-		ID:        &id,
+		ID:        tempId,
 		Content:   "",
 		Type:      "bot",
 		Sender:    senderId,
@@ -69,7 +69,7 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 			close(textChan)
 			go func() {
 				log.Println("Saving...")
-				chatDb.SaveMessage(&generatedMessage, message.ChatId, chat.Agent.Key, message.Content, client.Token)
+				chatDb.SaveMessage(&generatedMessage, chat.Agent.Key, message.Content, client.Token)
 				chatDb.UpdateChatLastMessage(&generatedMessage)
 			}()
 
@@ -77,7 +77,7 @@ func GenerateAIResponse(client *PoolClient, message *chatDomain.Message) {
 		}
 
 		streamedMessage := chatDomain.Message{
-			ID:        &id,
+			ID:        tempId,
 			Content:   text,
 			Type:      "bot",
 			Sender:    senderId,

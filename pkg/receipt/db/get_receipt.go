@@ -1,29 +1,36 @@
 package receiptDb
 
 import (
+	"context"
+	"errors"
+
+	"github.com/jackc/pgx/v5"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 	receiptDomain "github.com/mmosh-pit/mmosh_backend/pkg/receipt/domain"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// GetReceipt retrieves a receipt by purchase token from MongoDB
 func GetReceipt(purchaseToken string) (*receiptDomain.Receipt, error) {
-	client, ctx := config.GetMongoClient()
-	dbName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(dbName).Collection("mmosh-app-receipt")
+	var r receiptDomain.Receipt
 
-	filter := bson.M{"purchase_token": purchaseToken}
+	err := pool.QueryRow(ctx,
+		`SELECT id, package_name, product_id, purchase_token, wallet, platform, created_at, expired_at, is_canceled
+		 FROM receipts WHERE purchase_token = $1`,
+		purchaseToken,
+	).Scan(
+		&r.ID, &r.PackageName, &r.ProductID, &r.PurchaseToken, &r.Wallet,
+		&r.Platform, &r.CreatedAt, &r.ExpiredAt, &r.IsCanceled,
+	)
 
-	var receipt receiptDomain.Receipt
-	err := collection.FindOne(*ctx, filter).Decode(&receipt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil, nil
-		}
 		return nil, err
 	}
 
-	return &receipt, nil
+	return &r, nil
 }

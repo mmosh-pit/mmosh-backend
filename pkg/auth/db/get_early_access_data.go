@@ -1,25 +1,23 @@
 package auth
 
 import (
-	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetEarlyAccessData(email string) error {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("early-access")
+	var existingEmail string
 
-	var result authDomain.AddEarlyAccessParams
+	err := pool.QueryRow(ctx,
+		`SELECT email FROM early_access WHERE email = $1`,
+		email,
+	).Scan(&existingEmail)
 
-	err := collection.FindOne(*ctx, bson.D{{Key: "email", Value: email}}).Decode(&result)
-
-	if err == mongo.ErrNoDocuments {
+	if err != nil {
 		return nil
 	}
 
-	return err
+	return nil
 }

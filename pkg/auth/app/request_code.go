@@ -21,7 +21,7 @@ func RequestCodeForForgotPassword(email string) error {
 
 	user, err := authDb.GetUserByEmail(email)
 
-	if err != nil || user.ID == nil {
+	if err != nil || user.ID == "" {
 		return auth.ErrUserNotExists
 	}
 
@@ -58,7 +58,7 @@ func RequestCode(email string) error {
 
 	user, err := authDb.GetUserByEmail(email)
 
-	if err == nil && user.ID != nil {
+	if err == nil && user.ID != "" {
 		return auth.ErrUserAlreadyExists
 	}
 

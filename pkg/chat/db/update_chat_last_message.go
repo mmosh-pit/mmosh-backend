@@ -1,20 +1,21 @@
 package chat
 
 import (
-	chat "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
+	"context"
+	"encoding/json"
+
+	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
-func UpdateChatLastMessage(message *chat.Message) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func UpdateChatLastMessage(message *chatDomain.Message) {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("chats")
+	msgJSON, _ := json.Marshal(message)
 
-	filter := bson.D{{Key: "_id", Value: message.ChatId}}
-
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "lastMessage", Value: message}}}}
-
-	collection.UpdateOne(*ctx, filter, update)
+	pool.Exec(ctx,
+		`UPDATE chats SET last_message = $1 WHERE id = $2`,
+		msgJSON, message.ChatId,
+	)
 }

@@ -1,44 +1,31 @@
 package wallet
 
 import (
+	"context"
 	"log"
 
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type TokenOnly struct {
-	Token string `bson:"token"`
-}
-
 func GetAllCoinAddresses() ([]string, error) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("mmosh-app-tokens")
-
-	res, err := collection.Find(*ctx, bson.D{}, options.Find().SetProjection(bson.D{{Key: "token", Value: 1}}))
+	rows, err := pool.Query(ctx, `SELECT token FROM coin_addresses`)
 
 	var resultingTokens []string
 
 	if err != nil {
-
-		if err == mongo.ErrNoDocuments {
-			return resultingTokens, nil
-		}
-
 		return resultingTokens, err
 	}
+	defer rows.Close()
 
-	for res.Next(*ctx) {
-		var token TokenOnly
-
-		if err := res.Decode(&token); err != nil {
+	for rows.Next() {
+		var token string
+		if err := rows.Scan(&token); err != nil {
 			log.Fatal(err)
 		}
-		resultingTokens = append(resultingTokens, token.Token)
+		resultingTokens = append(resultingTokens, token)
 	}
 
 	return resultingTokens, nil

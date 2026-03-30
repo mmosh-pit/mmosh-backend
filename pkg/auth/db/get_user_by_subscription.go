@@ -6,24 +6,23 @@ import (
 	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetUserBySubscription(id string) (*authDomain.User, error) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("mmosh-users")
+	row := pool.QueryRow(ctx,
+		`SELECT `+selectUserColumns+` FROM users WHERE subscription->>'subscription_id' = $1`,
+		id,
+	)
 
-	result := &authDomain.User{}
+	result, err := scanUser(row)
 
-	err := collection.FindOne(*ctx, bson.D{{Key: "subscription.id", Value: id}}).Decode(result)
-
-	if err == mongo.ErrNoDocuments {
-		log.Printf("No document was found with the subscription %s\n", id)
-		return result, common.UserNotExistsErr
+	if err != nil {
+		log.Printf("No user found with subscription %s: %v\n", id, err)
+		return nil, common.UserNotExistsErr
 	}
 
-	return result, nil
+	return &result, nil
 }

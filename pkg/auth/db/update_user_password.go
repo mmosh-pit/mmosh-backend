@@ -2,26 +2,16 @@ package auth
 
 import (
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func UpdateUserPassword(ID *primitive.ObjectID, password string) error {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func UpdateUserPassword(ID string, password string) error {
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("mmosh-users")
-
-	filter := bson.D{{Key: "_id", Value: ID}}
-
-	update := bson.D{{
-		Key: "$set", Value: bson.D{{
-			Key:   "password",
-			Value: password,
-		}},
-	}}
-
-	_, err := collection.UpdateOne(*ctx, filter, update)
+	_, err := pool.Exec(ctx,
+		`UPDATE users SET password = $1 WHERE id = $2`,
+		password, ID,
+	)
 
 	return err
 }

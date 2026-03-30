@@ -1,22 +1,24 @@
 package auth
 
 import (
+	"encoding/json"
+
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func UpdateUserSessionToken(sessions []string, id *primitive.ObjectID) error {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func UpdateUserSessionToken(sessions []string, id string) error {
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("mmosh-users")
+	sessionsJSON, err := json.Marshal(sessions)
+	if err != nil {
+		return err
+	}
 
-	filter := bson.D{{Key: "_id", Value: id}}
-
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "sessions", Value: sessions}}}}
-
-	_, err := collection.UpdateOne(*ctx, filter, update)
+	_, err = pool.Exec(ctx,
+		`UPDATE users SET sessions = $1 WHERE id = $2`,
+		sessionsJSON, id,
+	)
 
 	return err
 }

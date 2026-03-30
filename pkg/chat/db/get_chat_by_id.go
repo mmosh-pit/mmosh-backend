@@ -1,27 +1,28 @@
 package chat
 
 import (
+	"context"
+	"errors"
 	"log"
 
 	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/jackc/pgx/v5"
 )
 
-func GetChatById(id *primitive.ObjectID) (*chatDomain.Chat, error) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func GetChatById(id string) (*chatDomain.Chat, error) {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("chats")
+	row := pool.QueryRow(ctx,
+		`SELECT `+chatSelectColumns+` FROM chats WHERE id = $1`,
+		id,
+	)
 
-	var result chatDomain.Chat
+	result, err := scanChat(row)
 
-	err := collection.FindOne(*ctx, bson.D{{Key: "_id", Value: id}}).Decode(&result)
-
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, common.ChatNotExistsErr
 	}
 

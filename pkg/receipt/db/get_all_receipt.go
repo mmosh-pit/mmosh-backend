@@ -1,32 +1,40 @@
 package receiptDb
 
 import (
+	"context"
+
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 	receiptDomain "github.com/mmosh-pit/mmosh_backend/pkg/receipt/domain"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func GetAllReceipts() ([]receiptDomain.Receipt, error) {
-	client, ctx := config.GetMongoClient()
-	dbName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(dbName).Collection("mmosh-app-receipt")
+	rows, err := pool.Query(ctx,
+		`SELECT id, package_name, product_id, purchase_token, wallet, platform, created_at, expired_at, is_canceled
+		 FROM receipts`,
+	)
 
-	cursor, err := collection.Find(*ctx, bson.M{})
 	if err != nil {
 		return nil, err
 	}
-	defer cursor.Close(*ctx)
+	defer rows.Close()
 
 	var receipts []receiptDomain.Receipt
-	for cursor.Next(*ctx) {
-		var receipt receiptDomain.Receipt
-		if err := cursor.Decode(&receipt); err != nil {
+
+	for rows.Next() {
+		var r receiptDomain.Receipt
+		if err := rows.Scan(
+			&r.ID, &r.PackageName, &r.ProductID, &r.PurchaseToken, &r.Wallet,
+			&r.Platform, &r.CreatedAt, &r.ExpiredAt, &r.IsCanceled,
+		); err != nil {
 			return nil, err
 		}
-		receipts = append(receipts, receipt)
+		receipts = append(receipts, r)
 	}
-	if err := cursor.Err(); err != nil {
+
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 

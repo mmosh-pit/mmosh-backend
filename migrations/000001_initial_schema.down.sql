@@ -1,0 +1,16 @@
+DROP TABLE IF EXISTS themes;
+DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS subscriptions;
+DROP TABLE IF EXISTS receipts;
+DROP TABLE IF EXISTS coin_addresses;
+DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS chats;
+DROP TABLE IF EXISTS chat_bots;
+DROP TABLE IF EXISTS activated_agents;
+DROP TABLE IF EXISTS bots;
+DROP TABLE IF EXISTS account_deletion_requests;
+DROP TABLE IF EXISTS early_access;
+DROP TABLE IF EXISTS failed_email_attempts;
+DROP TABLE IF EXISTS wallets;
+DROP TABLE IF EXISTS email_verification;
+DROP TABLE IF EXISTS users;

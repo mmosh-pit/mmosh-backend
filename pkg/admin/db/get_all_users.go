@@ -1,94 +1,66 @@
 package db
 
 import (
+	"context"
 	"log"
+	"time"
 
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/jackc/pgx/v5"
 )
 
 func GetAllUsers(page int64, search string) *[]auth.User {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	var result []auth.User
-
-	collection := client.Database(databaseName).Collection("mmosh-users")
-
-	filter := bson.D{}
-
-	opts := options.Find().SetSkip(page * 20).SetLimit(20).SetProjection(
-		bson.M{
-			"_id":             1,
-			"name":            1,
-			"symbol":          1,
-			"email":           1,
-			"desc":            1,
-			"key":             1,
-			"image":           1,
-			"creatorUsername": 1,
-			"privacy":         1,
-			"system_prompt":   1,
-			"type":            1,
-			"created_at":      1,
-			"last_login":      1,
-			"deactivated":     1,
-		},
-	).SetSort(bson.D{{
-		Key:   "profile.seniority",
-		Value: -1,
-	}})
+	var (
+		rows pgx.Rows
+		err  error
+	)
 
 	if search != "" {
-		filter = bson.D{{
-			Key: "$or",
-			Value: []any{
-				bson.D{{
-					Key: "name",
-					Value: primitive.Regex{
-						Pattern: search,
-						Options: "i",
-					},
-				}},
-
-				bson.D{{
-					Key: "symbol",
-					Value: primitive.Regex{
-						Pattern: search,
-						Options: "i",
-					},
-				}},
-
-				bson.D{{
-					Key: "desc",
-					Value: primitive.Regex{
-						Pattern: search,
-						Options: "i",
-					},
-				}},
-			},
-		}}
+		pattern := "%" + search + "%"
+		rows, err = pool.Query(ctx,
+			`SELECT id, name, email, last_login, created_at, deactivated, role
+			 FROM users
+			 WHERE name ILIKE $1 OR username ILIKE $1 OR email ILIKE $1
+			 ORDER BY seniority DESC
+			 LIMIT 20 OFFSET $2`,
+			pattern, page*20,
+		)
+	} else {
+		rows, err = pool.Query(ctx,
+			`SELECT id, name, email, last_login, created_at, deactivated, role
+			 FROM users
+			 ORDER BY seniority DESC
+			 LIMIT 20 OFFSET $1`,
+			page*20,
+		)
 	}
 
-	res, err := collection.Find(*ctx, filter, opts)
+	var result []auth.User
 
 	if err != nil {
 		log.Printf("[ADMIN/GET ALL USERS] Got error retrieving all users: %v\n", err)
 		return &result
 	}
+	defer rows.Close()
 
-	for res.Next(*ctx) {
-		var user auth.User
+	for rows.Next() {
+		var u auth.User
+		var lastLogin *time.Time
 
-		if err := res.Decode(&user); err != nil {
+		if err := rows.Scan(&u.ID, &u.Name, &u.Email, &lastLogin, &u.CreatedAt, &u.Deactivated, &u.Role); err != nil {
 			log.Printf("[ADMIN/GET ALL USERS] could not decode user: %v\n", err)
 			continue
 		}
 
-		result = append(result, user)
+		if lastLogin != nil {
+			u.LastLogin = *lastLogin
+		}
+
+		result = append(result, u)
 	}
 
 	return &result

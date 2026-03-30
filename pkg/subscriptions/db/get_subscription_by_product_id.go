@@ -1,20 +1,38 @@
 package subscriptions
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
+
+	"github.com/jackc/pgx/v5"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	subscriptions "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/domain"
-	"go.mongodb.org/mongo-driver/bson"
+	subscriptionsDomain "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/domain"
 )
 
-func GetSubscriptionByProductId(productId string) (*subscriptions.Subscription, error) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func GetSubscriptionByProductId(productId string) (*subscriptionsDomain.Subscription, error) {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("subscription")
+	var s subscriptionsDomain.Subscription
+	var benefitsJSON []byte
 
-	var subscription subscriptions.Subscription
+	err := pool.QueryRow(ctx,
+		`SELECT id, name, tier, product_id, platform, benefits FROM subscriptions WHERE product_id = $1`,
+		productId,
+	).Scan(&s.ID, &s.Name, &s.Tier, &s.ProductId, &s.Platform, &benefitsJSON)
 
-	err := collection.FindOne(*ctx, bson.D{{Key: "product_id", Value: productId}}).Decode(&subscription)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
 
-	return &subscription, err
+	if err != nil {
+		return nil, err
+	}
+
+	if len(benefitsJSON) > 0 {
+		json.Unmarshal(benefitsJSON, &s.Benefits)
+	}
+
+	return &s, nil
 }

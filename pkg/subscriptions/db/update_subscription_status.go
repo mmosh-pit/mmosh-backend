@@ -1,34 +1,43 @@
 package subscriptions
 
 import (
-	subscriptionsDomain "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/domain"
+	"context"
+	"encoding/json"
 
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func UpdateSubscriptionStatus(user *primitive.ObjectID, productId string, newExpiresAt int64) error {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func UpdateSubscriptionStatus(userId string, productId string, newExpiresAt int64) error {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	subscriptions, _ := GetSubscriptions()
+	subs, _ := GetSubscriptions()
 
-	collection := client.Database(databaseName).Collection("mmosh-users")
+	var tier int
+	var subId string
 
-	var subscription subscriptionsDomain.Subscription
-
-	for _, value := range subscriptions {
-		if value.ProductId == productId {
-			subscription = value
+	for _, s := range subs {
+		if s.ProductId == productId {
+			tier = s.Tier
+			subId = s.ID
+			break
 		}
 	}
 
-	filter := bson.D{{Key: "_id", Value: user}}
+	update := map[string]any{
+		"product_id":        productId,
+		"subscription_id":   subId,
+		"subscription_tier": tier,
+		"expires_at":        newExpiresAt,
+		"changed_plan":      false,
+	}
 
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "subscription.expires_at", Value: newExpiresAt}, {Key: "subscription.subscription_tier", Value: subscription.Tier}, {Key: "subscription.product_id", Value: productId}, {Key: "subscription.subscription_id", Value: subscription.ID}, {Key: "subscription.changed_plan", Value: false}}}}
+	updateJSON, _ := json.Marshal(update)
 
-	_, err := collection.UpdateOne(*ctx, filter, update)
+	_, err := pool.Exec(ctx,
+		`UPDATE users SET subscription = subscription || $1::jsonb WHERE id = $2`,
+		updateJSON, userId,
+	)
 
 	return err
 }

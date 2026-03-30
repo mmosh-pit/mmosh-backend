@@ -1,17 +1,25 @@
 package subscriptions
 
 import (
+	"context"
+	"encoding/json"
+
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	subscriptions "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/domain"
+	subscriptionsDomain "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/domain"
 )
 
-func AddSubscription(data *subscriptions.Subscription) error {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func AddSubscription(data *subscriptionsDomain.Subscription) error {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("subscription")
+	benefitsJSON, _ := json.Marshal(data.Benefits)
 
-	_, err := collection.InsertOne(*ctx, data)
+	err := pool.QueryRow(ctx,
+		`INSERT INTO subscriptions (name, tier, product_id, platform, benefits)
+		 VALUES ($1, $2, $3, $4, $5)
+		 RETURNING id`,
+		data.Name, data.Tier, data.ProductId, data.Platform, benefitsJSON,
+	).Scan(&data.ID)
 
 	return err
 }

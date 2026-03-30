@@ -22,7 +22,7 @@ func ChangePassword(params ChangePasswordParams) error {
 
 	existingUser, err := authDb.GetUserByEmail(existingCode.Email)
 
-	if err != nil || existingUser.ID == nil {
+	if err != nil || existingUser.ID == "" {
 		return authDomain.ErrUserNotExists
 	}
 

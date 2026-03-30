@@ -7,16 +7,14 @@ import (
 	chatDb "github.com/mmosh-pit/mmosh_backend/pkg/chat/db"
 	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	commonDomain "github.com/mmosh-pit/mmosh_backend/pkg/common/domain"
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/jackc/pgx/v5"
 )
 
 func GetActiveChats(ownerId string) ([]chatDomain.Chat, error) {
-
 	_, err := auth.GetUserById(ownerId)
 
 	if err != nil {
-
-		if errors.Is(err, mongo.ErrNoDocuments) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, commonDomain.UserNotExistsErr
 		}
 

@@ -1,21 +1,18 @@
 package chat
 
 import (
+	"context"
+	"encoding/json"
 	"log"
 
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func CreateChat(user *auth.User) *chatDomain.Chat {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
-
-	collection := client.Database(databaseName).Collection("chats")
-
-	_id := primitive.NewObjectID()
+	pool := config.GetPool()
+	ctx := context.Background()
 
 	userParticipant := chatDomain.Participant{
 		ID:      user.ID,
@@ -25,28 +22,25 @@ func CreateChat(user *auth.User) *chatDomain.Chat {
 	}
 
 	botParticipants := GetBotUsers()
+	participants := append(botParticipants, userParticipant)
 
-	participants := botParticipants
+	participantsJSON, _ := json.Marshal(participants)
 
-	participants = append(participants, userParticipant)
-
-	newChat := chatDomain.Chat{
-		ID:           &_id,
-		Participants: participants,
-		Messages:     []chatDomain.Message{},
-		Owner:        user.ID,
-	}
-
-	res, err := collection.InsertOne(*ctx, newChat)
+	var newChatId string
+	err := pool.QueryRow(ctx,
+		`INSERT INTO chats (owner, participants) VALUES ($1, $2) RETURNING id`,
+		user.ID, participantsJSON,
+	).Scan(&newChatId)
 
 	if err != nil {
 		log.Printf("Got error creating a new chat: %v\n", err)
 		return nil
 	}
 
-	id := res.InsertedID.(primitive.ObjectID)
-
-	newChat.ID = &id
-
-	return &newChat
+	return &chatDomain.Chat{
+		ID:           newChatId,
+		Participants: participants,
+		Messages:     []chatDomain.Message{},
+		Owner:        user.ID,
+	}
 }

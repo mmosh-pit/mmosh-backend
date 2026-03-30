@@ -11,9 +11,8 @@ import (
 )
 
 var (
-	mongoDbURI        string
-	mongoDatabaseName string
-	secretKey         string
+	databaseURL string
+	secretKey   string
 	secretIv          string
 
 	walletBackenUrl string
@@ -64,14 +63,9 @@ func ValidateEnvironmentVariables(path string) {
 		return
 	}
 
-	foundMongoURI, ok := os.LookupEnv("MONGO_URI")
+	foundDatabaseURL, ok := os.LookupEnv("DATABASE_URL")
 	if !ok {
-		panic("Missing MONGO_URI env variable")
-	}
-
-	foundDatabaseName, ok := os.LookupEnv("DATABASE_NAME")
-	if !ok {
-		panic("Missing DATABASE_NAME env variable")
+		panic("Missing DATABASE_URL env variable")
 	}
 
 	foundSecretKey, ok := os.LookupEnv("SECRET_KEY")
@@ -123,8 +117,7 @@ func ValidateEnvironmentVariables(path string) {
 		panic("APPLE_APP_STORE_CONNECT_KEY_ID is not present")
 	}
 
-	mongoDbURI = foundMongoURI
-	mongoDatabaseName = foundDatabaseName
+	databaseURL = foundDatabaseURL
 	secretKey = foundSecretKey
 	secretIv = foundSecretIv
 
@@ -281,12 +274,8 @@ func ValidateEnvironmentVariables(path string) {
 	anthropicKey = foundAnthropicKey
 }
 
-func GetMongoURI() *string {
-	return &mongoDbURI
-}
-
-func GetDatabaseName() string {
-	return mongoDatabaseName
+func GetDatabaseURL() string {
+	return databaseURL
 }
 
 func GetEncryptionKeys() (string, string) {

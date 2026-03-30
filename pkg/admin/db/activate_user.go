@@ -1,35 +1,26 @@
 package db
 
 import (
-	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"context"
 
 	adminDomain "github.com/mmosh-pit/mmosh_backend/pkg/admin/domain"
+	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 )
 
-func ActivateUser(userId *primitive.ObjectID) error {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func ActivateUser(userId string) error {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("mmosh-users")
-
-	res, err := collection.UpdateOne(*ctx, bson.D{{
-		Key:   "_id",
-		Value: userId,
-	}}, bson.D{{
-		Key: "$set",
-		Value: bson.D{{
-			Key:   "deactivated",
-			Value: false,
-		}},
-	}})
+	tag, err := pool.Exec(ctx,
+		`UPDATE users SET deactivated = false WHERE id = $1`,
+		userId,
+	)
 
 	if err != nil {
 		return err
 	}
 
-	if res.ModifiedCount == 0 {
+	if tag.RowsAffected() == 0 {
 		return adminDomain.ErrUserNotFound
 	}
 

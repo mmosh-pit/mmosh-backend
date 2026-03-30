@@ -1,28 +1,27 @@
 package wallet
 
 import (
+	"context"
+	"errors"
+
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/jackc/pgx/v5"
 )
 
-func GetAssociatedEmailByWallet(wallet string) string {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func GetAssociatedEmailByWallet(walletAddr string) string {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("mmosh-app-user-wallet")
+	var email string
 
-	var result struct {
-		Email string `json:"email"`
-	}
+	err := pool.QueryRow(ctx,
+		`SELECT email FROM wallets WHERE address = $1`,
+		walletAddr,
+	).Scan(&email)
 
-	err := collection.FindOne(*ctx, bson.D{{
-		Key: "address", Value: wallet,
-	}}).Decode(&result)
-
-	if err == mongo.ErrNoDocuments || err != nil {
+	if errors.Is(err, pgx.ErrNoRows) || err != nil {
 		return ""
 	}
 
-	return result.Email
+	return email
 }

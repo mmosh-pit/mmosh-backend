@@ -1,30 +1,23 @@
 package db
 
 import (
+	"context"
 	"log"
 
 	adminDomain "github.com/mmosh-pit/mmosh_backend/pkg/admin/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func UpdateBot(payload adminDomain.UpdateBotPayload) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("mmosh-app-project")
+	_, err := pool.Exec(ctx,
+		`UPDATE bots SET name = $1, symbol = $2, default_model = $3, deactivated = $4 WHERE id = $5`,
+		payload.Name, payload.Symbol, payload.DefaultModel, payload.Deactivated, payload.ID,
+	)
 
-	_, err := collection.UpdateOne(*ctx, bson.D{{
-		Key:   "_id",
-		Value: payload.ID,
-	}}, bson.M{
-		"$set": bson.M{
-			"name":         payload.Name,
-			"symbol":       payload.Symbol,
-			"defaultmodel": payload.DefaultModel,
-			"deactivated":  payload.Deactivated,
-		},
-	})
-
-	log.Printf("Error updating BOT: %v\n", err)
+	if err != nil {
+		log.Printf("Error updating BOT: %v\n", err)
+	}
 }

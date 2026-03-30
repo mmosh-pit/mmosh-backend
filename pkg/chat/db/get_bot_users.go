@@ -1,35 +1,32 @@
 package chat
 
 import (
+	"context"
 	"log"
 
-	chat "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
+	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
-func GetBotUsers() []chat.Participant {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func GetBotUsers() []chatDomain.Participant {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("chat-bots")
+	var resultingUsers []chatDomain.Participant
 
-	var resultingUsers []chat.Participant
-
-	res, err := collection.Find(*ctx, bson.D{})
+	rows, err := pool.Query(ctx, `SELECT id, name, type, picture FROM chat_bots`)
 
 	if err != nil {
 		return resultingUsers
 	}
+	defer rows.Close()
 
-	for res.Next(*ctx) {
-		var user chat.Participant
-
-		if err := res.Decode(&user); err != nil {
+	for rows.Next() {
+		var user chatDomain.Participant
+		if err := rows.Scan(&user.ID, &user.Name, &user.Type, &user.Picture); err != nil {
 			log.Printf("Error decoding chat bot participant: %v\n", err)
 			continue
 		}
-
 		resultingUsers = append(resultingUsers, user)
 	}
 

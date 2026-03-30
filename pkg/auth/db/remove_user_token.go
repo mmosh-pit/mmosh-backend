@@ -2,21 +2,22 @@ package auth
 
 import (
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func RemoveUserToken(userId *primitive.ObjectID, token string) error {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func RemoveUserToken(userId string, token string) error {
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("mmosh-users")
-
-	filter := bson.D{{Key: "_id", Value: userId}}
-
-	update := bson.D{{Key: "$pull", Value: bson.D{{Key: "sessions", Value: token}}}}
-
-	_, err := collection.UpdateOne(*ctx, filter, update)
+	_, err := pool.Exec(ctx,
+		`UPDATE users
+		 SET sessions = (
+		   SELECT COALESCE(jsonb_agg(val), '[]'::jsonb)
+		   FROM jsonb_array_elements(sessions) AS val
+		   WHERE val <> to_jsonb($1::text)
+		 )
+		 WHERE id = $2`,
+		token, userId,
+	)
 
 	return err
 }

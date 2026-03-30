@@ -3,8 +3,6 @@ package auth
 import (
 	"errors"
 	"time"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var ErrSomethingWentWrong = errors.New("Something Went Wrong")
@@ -33,9 +31,9 @@ type SignUpParams struct {
 }
 
 type AccountDeletionRequest struct {
-	Name   string `json:"name" bson:"name"`
-	Email  string `json:"email" bson:"email"`
-	Reason string `json:"reason" bson:"reason"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
+	Reason string `json:"reason"`
 }
 
 type AddReferrerParams struct {
@@ -43,82 +41,82 @@ type AddReferrerParams struct {
 }
 
 type WebsiteLink struct {
-	Link  string `json:"link" bson:"link"`
-	Order int    `json:"order" bson:"order"`
+	Link  string `json:"link"`
+	Order int    `json:"order"`
 }
 
 type User struct {
-	ID             *primitive.ObjectID `bson:"_id,omitempty"`
-	UUID           string              `json:"uuid" bson:"uuid, omitempty"`
-	Picture        string              `json:"picture"`
-	Banner         string              `jsos:"banner"`
-	Name           string              `json:"name"`
-	DisplayName    string              `json:"displayName"`
-	LastName       string              `json:"lastName"`
-	Username       string              `json:"username"`
-	Websites       []WebsiteLink       `json:"websites"`
-	Bio            string              `json:"bio"`
-	Challenges     string              `json:"challenges"`
-	Email          string              `bson:"email" json:"email"`
-	Password       string              `bson:"password,omitempty" json:"password"`
-	Telegram       TelegramUserData    `bson:"telegram,omitempty" json:"telegram"`
-	Sessions       []string            `bson:"sessions,omitempty" json:"sessions"`
-	Bluesky        BlueskyUserData     `bson:"bluesky,omitempty" json:"bluesky"`
-	Subscription   UserSubscription    `bson:"subscription,omitempty" json:"subscription"`
-	Wallet         string              `json:"wallet,omitempty" bson:"wallet"`
-	ReferredBy     string              `json:"referred_by,omitempty" bson:"referred_by"`
-	OnboardingStep int                 `json:"onboarding_step,omitempty" bson:"onboarding_step"`
-	CreatedAt      time.Time           `bson:"created_at,omitempty" json:"createdAt"`
-	LastLogin      time.Time           `bson:"last_login,omitempty" json:"lastLogin"`
-	ProfileNFT     string              `json:"profilenft,omitempty" bson:"profilenft"`
-	Role           string              `json:"role,omitempty" bson:"role"`
-	FromBot        string              `bson:"from_bot,omitempty"`
-	Deactivated    *bool               `json:"deactivated" bson:"deactivated,omitempty"`
+	ID          string `json:"id"`
+	UUID        string `json:"uuid"`
+	Picture     string `json:"picture"`
+	Banner      string `json:"banner"`
+	Name        string `json:"name"`
+	DisplayName string `json:"displayName"`
+	LastName    string `json:"lastName"`
+	Username    string `json:"username"`
+	Websites    []WebsiteLink `json:"websites"`
+	Bio         string `json:"bio"`
+	Challenges  string `json:"challenges"`
+	Email       string `json:"email"`
+	Password    string `json:"password,omitempty"`
+	Telegram    TelegramUserData `json:"telegram"`
+	Sessions    []string `json:"sessions,omitempty"`
+	Bluesky     BlueskyUserData `json:"bluesky"`
+	Subscription UserSubscription `json:"subscription"`
+	Wallet      string `json:"wallet,omitempty"`
+	ReferredBy  string `json:"referred_by,omitempty"`
+	OnboardingStep int `json:"onboarding_step,omitempty"`
+	CreatedAt   time.Time `json:"createdAt"`
+	LastLogin   time.Time `json:"lastLogin"`
+	ProfileNFT  string `json:"profilenft,omitempty"`
+	Role        string `json:"role,omitempty"`
+	FromBot     string `json:"from_bot,omitempty"`
+	Deactivated bool   `json:"deactivated"`
 
-	Seniority       int    `json:"seniority" bson:"seniority"`
-	Symbol          string `json:"symbol" bson:"symbol"`
-	Link            string `json:"link" bson:"link"`
-	Following       int    `json:"following" bson:"following"`
-	Follower        int    `json:"follower" bson:"follower"`
-	ConnectionNFT   string `json:"connectionnft" bson:"connectionnft"`
-	ConnectionBadge string `json:"connectionbadge" bson:"connectionbadge"`
-	Connection      int    `json:"connection" bson:"connection"`
-	IsPrivate       bool   `json:"isprivate" bson:"isprivate"`
-	Request         bool   `json:"request" bson:"request"`
+	Seniority       int    `json:"seniority"`
+	Symbol          string `json:"symbol"`
+	Link            string `json:"link"`
+	Following       int    `json:"following"`
+	Follower        int    `json:"follower"`
+	ConnectionNFT   string `json:"connectionnft"`
+	ConnectionBadge string `json:"connectionbadge"`
+	Connection      int    `json:"connection"`
+	IsPrivate       bool   `json:"isprivate"`
+	Request         bool   `json:"request"`
 }
 
 type UserSubscription struct {
-	ProductId        string `bson:"product_id" json:"product_id"`
-	SubProductId     string `bson:"sub_product_id" json:"sub_product_id"`
-	PurchaseToken    string `bson:"purchase_token" json:"purchase_token"`
-	SubscriptionId   string `bson:"subscription_id" json:"subscription_id"`
-	SubscriptionTier int    `bson:"subscription_tier" json:"subscription_tier"`
-	ExpiresAt        int64  `bson:"expires_at" json:"expires_at"`
-	Platform         string `bson:"platform" json:"platform"`
-	ChangedPlan      bool   `bson:"changed_plan" json:"changed_plan"`
+	ProductId        string `json:"product_id"`
+	SubProductId     string `json:"sub_product_id"`
+	PurchaseToken    string `json:"purchase_token"`
+	SubscriptionId   string `json:"subscription_id"`
+	SubscriptionTier int    `json:"subscription_tier"`
+	ExpiresAt        int64  `json:"expires_at"`
+	Platform         string `json:"platform"`
+	ChangedPlan      bool   `json:"changed_plan"`
 }
 
 type BlueskyUserData struct {
-	Handle   string `bson:"handle" json:"handle"`
-	Password string `bson:"password" json:"password"`
+	Handle   string `json:"handle"`
+	Password string `json:"password"`
 }
 
 type TelegramUserData struct {
-	Id        int    `bson:"id" json:"id"`
-	FirstName string `bson:"firstName" json:"firstName"`
-	Username  string `bson:"username" json:"username"`
+	Id        int    `json:"id"`
+	FirstName string `json:"firstName"`
+	Username  string `json:"username"`
 }
 
 type BlueskyData struct {
-	Id           string `bson:"id" json:"id"`
-	Handle       string `bson:"handle" json:"handle"`
-	Token        string `bson:"token" json:"token"`
-	RefreshToken string `bson:"refreshToken" json:"refreshToken"`
+	Id           string `json:"id"`
+	Handle       string `json:"handle"`
+	Token        string `json:"token"`
+	RefreshToken string `json:"refreshToken"`
 }
 
 type VerificationData struct {
-	Email string `bson:"email" json:"email"`
-	Code  int    `bson:"code" json:"code"`
+	Email string `json:"email"`
+	Code  int    `json:"code"`
 }
 
 type KeyPair struct {
@@ -132,14 +130,14 @@ type WalletResponse struct {
 }
 
 type Wallet struct {
-	Address   string    `json:"address" bson:"address"`
-	Private   string    `json:"private" bson:"private"`
-	Email     string    `json:"email" bson:"email"`
-	CreatedAt time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
+	Address   string    `json:"address"`
+	Private   string    `json:"private"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type AddEarlyAccessParams struct {
-	Name  string `json:"name" bson:"name"`
-	Email string `json:"email" bson:"email"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }

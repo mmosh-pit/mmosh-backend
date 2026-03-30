@@ -2,123 +2,87 @@ package chat
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
-	agents "github.com/mmosh-pit/mmosh_backend/pkg/bots/domain"
-	chat "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
+	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func SetDefaultChat(user *auth.User, bot string) {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	insertChat := func(botId, botName, botDesc, botImage, botSymbol, botKey, botSystemPrompt, botCreatorUsername string) {
+		chatAgent := chatDomain.ChatAgent{
+			Id:              botId,
+			Name:            botName,
+			Desc:            botDesc,
+			Image:           botImage,
+			Symbol:          botSymbol,
+			Key:             botKey,
+			SystemPrompt:    botSystemPrompt,
+			CreatorUsername: botCreatorUsername,
+		}
+		participants := []chatDomain.Participant{
+			{
+				ID:      user.ID,
+				Name:    user.Name,
+				Type:    "user",
+				Picture: user.Picture,
+			},
+			{
+				ID:      botId,
+				Type:    "bot",
+				Picture: botImage,
+				Name:    botName,
+			},
+		}
 
-	database := client.Database(databaseName)
+		agentJSON, _ := json.Marshal(chatAgent)
+		participantsJSON, _ := json.Marshal(participants)
 
-	projectCollection := database.Collection("mmosh-app-project")
-	chatCollection := database.Collection("chats")
+		_, err := pool.Exec(ctx,
+			`INSERT INTO chats (owner, chat_agent, participants) VALUES ($1, $2, $3)`,
+			user.ID, agentJSON, participantsJSON,
+		)
+		if err != nil {
+			log.Printf("Could not insert chat: %v\n", err)
+		}
+	}
 
-	var defaultBot agents.Bot
+	var (
+		botId, botName, botDesc, botImage, botSymbol, botKey, botSystemPrompt, botCreatorUsername string
+	)
 
-	err := projectCollection.FindOne(*ctx, bson.D{{
-		Key:   "symbol",
-		Value: "CATFAWN",
-	}}).Decode(&defaultBot)
+	err := pool.QueryRow(ctx,
+		`SELECT id, name, description, image, symbol, key, system_prompt, creator_username FROM bots WHERE symbol = 'CATFAWN'`,
+	).Scan(&botId, &botName, &botDesc, &botImage, &botSymbol, &botKey, &botSystemPrompt, &botCreatorUsername)
 
 	if err != nil {
 		log.Printf("Could not setup default chat for user, chat not retrieved: %v\n", err)
 		return
 	}
 
-	id := primitive.NewObjectID()
-
-	userPicture := user.Picture
-
-	newChat := chat.Chat{
-		ID: &id,
-		Agent: &chat.ChatAgent{
-			Id:              defaultBot.Id,
-			Name:            defaultBot.Name,
-			Desc:            defaultBot.Desc,
-			Image:           defaultBot.Image,
-			Symbol:          defaultBot.Symbol,
-			Key:             defaultBot.Key,
-			SystemPrompt:    defaultBot.SystemPrompt,
-			CreatorUsername: defaultBot.CreatorUsername,
-		},
-		Owner:    user.ID,
-		Messages: []chat.Message{},
-		Participants: []chat.Participant{
-			{
-				ID:      user.ID,
-				Name:    user.Name,
-				Type:    "user",
-				Picture: userPicture,
-			},
-			{
-				ID:      defaultBot.Id,
-				Type:    "bot",
-				Picture: defaultBot.Image,
-				Name:    defaultBot.Name,
-			},
-		},
-	}
-
-	chatCollection.InsertOne(*ctx, newChat)
+	insertChat(botId, botName, botDesc, botImage, botSymbol, botKey, botSystemPrompt, botCreatorUsername)
 
 	log.Printf("Got bot here: %s\n", bot)
 
 	if bot != "KIN" {
 		log.Printf("Going to assign new bot: %s\n", bot)
-		var newBot agents.Bot
 
-		err := projectCollection.FindOne(*ctx, bson.D{{
-			Key:   "symbol",
-			Value: bot,
-		}}).Decode(&newBot)
+		err := pool.QueryRow(ctx,
+			`SELECT id, name, description, image, symbol, key, system_prompt, creator_username FROM bots WHERE symbol = $1`,
+			bot,
+		).Scan(&botId, &botName, &botDesc, &botImage, &botSymbol, &botKey, &botSystemPrompt, &botCreatorUsername)
 
 		if err != nil {
 			log.Printf("Could not setup chat for user, chat not retrieved: %v\n", err)
 			return
 		}
 
-		newBotId := primitive.NewObjectID()
-		newBotChat := chat.Chat{
-			ID: &newBotId,
-			Agent: &chat.ChatAgent{
-				Id:              newBot.Id,
-				Name:            newBot.Name,
-				Desc:            newBot.Desc,
-				Image:           newBot.Image,
-				Symbol:          newBot.Symbol,
-				Key:             newBot.Key,
-				SystemPrompt:    newBot.SystemPrompt,
-				CreatorUsername: newBot.CreatorUsername,
-			},
-			Owner:    user.ID,
-			Messages: []chat.Message{},
-			Participants: []chat.Participant{
-				{
-					ID:      user.ID,
-					Name:    user.Name,
-					Type:    "user",
-					Picture: userPicture,
-				},
-				{
-					ID:      newBot.Id,
-					Type:    "bot",
-					Picture: newBot.Image,
-					Name:    newBot.Name,
-				},
-			},
-		}
 		log.Printf("Inserting new bot with: %s\n", bot)
-		botCtx := context.Background()
-		chatCollection.InsertOne(botCtx, newBotChat)
+		insertChat(botId, botName, botDesc, botImage, botSymbol, botKey, botSystemPrompt, botCreatorUsername)
 	}
-
 }

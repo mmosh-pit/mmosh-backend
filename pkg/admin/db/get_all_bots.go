@@ -1,110 +1,63 @@
 package db
 
 import (
+	"context"
 	"log"
 
+	"github.com/jackc/pgx/v5"
 	bots "github.com/mmosh-pit/mmosh_backend/pkg/bots/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func GetAllBots(page int64, search string) *[]bots.Bot {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	result := []bots.Bot{}
 
-	collection := client.Database(databaseName).Collection("mmosh-app-project")
+	var (
+		rows pgx.Rows
+		err  error
+	)
 
-	opts := options.Find().SetSkip(page * 20).SetLimit(20).SetProjection(
-		bson.M{
-			"_id":             1,
-			"name":            1,
-			"symbol":          1,
-			"desc":            1,
-			"key":             1,
-			"image":           1,
-			"creatorUsername": 1,
-			"privacy":         1,
-			"system_prompt":   1,
-			"type":            1,
-		},
-	).SetSort(bson.D{{
-		Key:   "profile.seniority",
-		Value: -1,
-	}})
-
-	filter := bson.D{{}}
+	const selectCols = `id, name, symbol, description, key, image, creator_username, type, system_prompt, default_model, deactivated, created_at`
 
 	if search != "" {
-		filter = bson.D{{
-			Key: "$and",
-			Value: []any{
-				bson.D{{
-					Key: "$or",
-					Value: []any{
-						bson.D{{
-							Key: "name",
-							Value: primitive.Regex{
-								Pattern: search,
-								Options: "i",
-							},
-						}},
-
-						bson.D{{
-							Key: "symbol",
-							Value: primitive.Regex{
-								Pattern: search,
-								Options: "i",
-							},
-						}},
-
-						bson.D{{
-							Key: "desc",
-							Value: primitive.Regex{
-								Pattern: search,
-								Options: "i",
-							},
-						}},
-
-						bson.D{{
-							Key: "$and",
-							Value: []any{
-								bson.D{{
-									Key:   "code",
-									Value: search,
-								}},
-
-								bson.D{{
-									Key:   "privacy",
-									Value: "secret",
-								}},
-							},
-						}},
-					},
-				}},
-			},
-		}}
+		pattern := "%" + search + "%"
+		rows, err = pool.Query(ctx,
+			`SELECT `+selectCols+`
+			 FROM bots
+			 WHERE name ILIKE $1 OR symbol ILIKE $1 OR description ILIKE $1
+			 ORDER BY created_at DESC
+			 LIMIT 20 OFFSET $2`,
+			pattern, page*20,
+		)
+	} else {
+		rows, err = pool.Query(ctx,
+			`SELECT `+selectCols+`
+			 FROM bots
+			 ORDER BY created_at DESC
+			 LIMIT 20 OFFSET $1`,
+			page*20,
+		)
 	}
-
-	var result = []bots.Bot{}
-
-	res, err := collection.Find(*ctx, filter, opts)
 
 	if err != nil {
 		log.Printf("[ADMIN/GET BOTS] Got error here: %v\n", err)
 		return &result
 	}
+	defer rows.Close()
 
-	for res.Next(*ctx) {
+	for rows.Next() {
 		var bot bots.Bot
-
-		if err := res.Decode(&bot); err != nil {
-			log.Printf("[ADMIN/GET BOTS] Error decoding bot: %v\n", err)
+		if err := rows.Scan(
+			&bot.Id, &bot.Name, &bot.Symbol, &bot.Desc, &bot.Key, &bot.Image,
+			&bot.CreatorUsername, &bot.Type, &bot.SystemPrompt, &bot.DefaultModel,
+			&bot.Deactivated, &bot.CreatedAt,
+		); err != nil {
+			log.Printf("[ADMIN/GET BOTS] Error scanning bot: %v\n", err)
 			continue
 		}
-
 		result = append(result, bot)
 	}
 

@@ -5,22 +5,21 @@ import (
 
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func GetWalletByEmail(email string) *auth.Wallet {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
-
-	collection := client.Database(databaseName).Collection("mmosh-app-user-wallet")
+	pool := config.GetPool()
+	ctx := getContext()
 
 	var data auth.Wallet
 
-	err := collection.FindOne(*ctx, bson.D{{Key: "email", Value: email}}).Decode(&data)
+	err := pool.QueryRow(ctx,
+		`SELECT address, private, email, created_at, updated_at FROM wallets WHERE email = $1`,
+		email,
+	).Scan(&data.Address, &data.Private, &data.Email, &data.CreatedAt, &data.UpdatedAt)
 
 	if err != nil {
 		log.Printf("Error querying wallet: %v\n", err)
-
 		return nil
 	}
 

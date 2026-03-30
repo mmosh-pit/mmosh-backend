@@ -3,25 +3,26 @@ package auth
 import (
 	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func AddAccountDeletionRequest(data *authDomain.AccountDeletionRequest) int {
+	pool := config.GetPool()
+	ctx := getContext()
 
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	var existingEmail string
+	err := pool.QueryRow(ctx,
+		`SELECT email FROM account_deletion_requests WHERE email = $1`,
+		data.Email,
+	).Scan(&existingEmail)
 
-	collection := client.Database(databaseName).Collection("account-deletion-requests")
-
-	var existingData authDomain.AccountDeletionRequest
-
-	_ = collection.FindOne(*ctx, bson.D{{Key: "email", Value: data.Email}}).Decode(&existingData)
-
-	if existingData.Email != "" {
+	if err == nil && existingEmail != "" {
 		return 1
 	}
 
-	_, err := collection.InsertOne(*ctx, data)
+	_, err = pool.Exec(ctx,
+		`INSERT INTO account_deletion_requests (name, email, reason) VALUES ($1, $2, $3)`,
+		data.Name, data.Email, data.Reason,
+	)
 
 	if err != nil {
 		return -1

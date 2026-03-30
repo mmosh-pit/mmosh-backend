@@ -1,35 +1,37 @@
 package posts
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	posts "github.com/mmosh-pit/mmosh_backend/pkg/posts/domain"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	postsDomain "github.com/mmosh-pit/mmosh_backend/pkg/posts/domain"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
-func CreatePost(post *posts.Post) error {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func CreatePost(post *postsDomain.Post) error {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("posts")
+	tagsJSON, _ := json.Marshal(post.Tags)
+	authorsJSON, _ := json.Marshal(post.Authors)
 
-	post.ID = primitive.NilObjectID
-	res, err := collection.InsertOne(*ctx, post)
+	err := pool.QueryRow(ctx,
+		`INSERT INTO posts (header, sub_header, tags, authors, body, slug)
+		 VALUES ($1, $2, $3, $4, $5, $6)
+		 RETURNING id`,
+		post.Header, post.SubHeader, tagsJSON, authorsJSON, post.Body, post.Slug,
+	).Scan(&post.ID)
+
 	if err != nil {
-		if mongo.IsDuplicateKeyError(err) {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 			return errors.New("post with this slug already exists")
 		}
 		return fmt.Errorf("failed to insert post: %w", err)
 	}
 
-	if oid, ok := res.InsertedID.(primitive.ObjectID); ok {
-		post.ID = oid
-	} else {
-		log.Printf("WARN: Could not cast InsertedID to ObjectID for slug: %s", post.Slug)
-	}
 	return nil
 }

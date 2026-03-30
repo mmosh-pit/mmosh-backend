@@ -7,22 +7,18 @@ import (
 )
 
 type FailedAttempt struct {
-	Email   string `bson:"email"`
-	Keypair string `bson:"keypair"`
+	Email   string
+	Keypair string
 }
 
 func SaveFailedEmailAttemptsKeypairs(email, keypair string) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("mmosh-app-user-wallet")
-
-	data := FailedAttempt{
-		Email:   email,
-		Keypair: keypair,
-	}
-
-	_, err := collection.InsertOne(*ctx, data)
+	_, err := pool.Exec(ctx,
+		`INSERT INTO failed_email_attempts (email, keypair) VALUES ($1, $2)`,
+		email, keypair,
+	)
 
 	if err != nil {
 		log.Printf("Error trying to save failed wallet email attempt: %v\n", err)

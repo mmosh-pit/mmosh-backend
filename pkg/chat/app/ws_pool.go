@@ -1,13 +1,13 @@
 package chat
 
 import (
+	"fmt"
 	"log"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
 	chat "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Pool struct {
@@ -69,7 +69,6 @@ func Start() {
 			WsPool.Clients[client.UserId] = client.Client
 			log.Println("Size of Connection Pool: ", len(WsPool.Clients))
 
-			// client.Client.SendSimpleResponse("Connected")
 			client.Client.Conn.WriteJSON("connected")
 			break
 
@@ -83,28 +82,16 @@ func Start() {
 				break
 			}
 
-			id := primitive.NewObjectID()
-
-			userId, _ := primitive.ObjectIDFromHex(message.UserId)
-
-			chatId, err := primitive.ObjectIDFromHex(message.ChatId)
-
-			agentId, err := primitive.ObjectIDFromHex(message.AgentId)
-
-			resultingId := &agentId
-
-			if err != nil {
-				resultingId = nil
-			}
+			tempId := fmt.Sprintf("%d", time.Now().UnixNano())
 
 			messageData := chat.Message{
-				ID:        &id,
+				ID:        tempId,
 				Content:   message.Content,
-				Sender:    &userId,
+				Sender:    message.UserId,
 				CreatedAt: time.Now(),
 				Type:      "user",
-				AgentId:   resultingId,
-				ChatId:    &chatId,
+				AgentId:   message.AgentId,
+				ChatId:    message.ChatId,
 			}
 
 			data := map[string]any{
@@ -125,35 +112,18 @@ func Start() {
 
 			log.Println("Gonna send...")
 
-			id := primitive.NewObjectID()
-
-			userId, _ := primitive.ObjectIDFromHex(message.UserId)
-
-			agentId, err := primitive.ObjectIDFromHex(message.AgentId)
-
-			resultingId := &agentId
-
-			if err != nil {
-				resultingId = nil
-			}
-
-			chatId, err := primitive.ObjectIDFromHex(message.ChatId)
-
-			if err != nil {
-				log.Printf("Invalid chat object ID: %v, %v\n", message.ChatId, err)
-				break
-			}
+			tempId := fmt.Sprintf("%d", time.Now().UnixNano())
 
 			messageData := chat.Message{
-				ID:           &id,
+				ID:           tempId,
 				Content:      message.Content,
-				Sender:       &userId,
+				Sender:       message.UserId,
 				CreatedAt:    time.Now(),
 				Type:         "user",
 				Namespaces:   message.Namespaces,
 				SystemPrompt: message.SystemPrompt,
-				AgentId:      resultingId,
-				ChatId:       &chatId,
+				AgentId:      message.AgentId,
+				ChatId:       message.ChatId,
 			}
 
 			data := map[string]any{

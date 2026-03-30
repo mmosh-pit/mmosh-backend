@@ -1,20 +1,16 @@
 package chat
 
-import (
-	"time"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
-)
+import "time"
 
 type Message struct {
-	ID           *primitive.ObjectID `bson:"_id" json:"id"`
-	Content      string              `bson:"content" json:"content"`
-	Type         string              `bson:"type" json:"type"`
-	CreatedAt    time.Time           `bson:"created_at" json:"created_at"`
-	Sender       *primitive.ObjectID `bsob:"sender" json:"sender"`
-	IsLoading    bool                `json:"is_loading"`
-	SystemPrompt string
-	Namespaces   []string
-	AgentId      *primitive.ObjectID `json:"agent_id"`
-	ChatId       *primitive.ObjectID `json:"chat_id"`
+	ID           string    `json:"id"`
+	Content      string    `json:"content"`
+	Type         string    `json:"type"`
+	CreatedAt    time.Time `json:"created_at"`
+	Sender       string    `json:"sender"`
+	IsLoading    bool      `json:"is_loading"`
+	SystemPrompt string    `json:"-"`
+	Namespaces   []string  `json:"-"`
+	AgentId      string    `json:"agent_id"`
+	ChatId       string    `json:"chat_id"`
 }

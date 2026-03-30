@@ -5,23 +5,22 @@ import (
 
 	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetUserByEmail(email string) (authDomain.User, error) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("mmosh-users")
+	row := pool.QueryRow(ctx,
+		`SELECT `+selectUserColumns+` FROM users WHERE email = $1`,
+		email,
+	)
 
-	var result authDomain.User
+	result, err := scanUser(row)
 
-	err := collection.FindOne(*ctx, bson.D{{Key: "email", Value: email}}).Decode(&result)
-
-	if err == mongo.ErrNoDocuments {
-		log.Printf("No document was found with the title %s\n", email)
-		return result, nil
+	if err != nil {
+		log.Printf("No user found with email %s: %v\n", email, err)
+		return result, err
 	}
 
 	result.Password = ""

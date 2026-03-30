@@ -3,21 +3,20 @@ package auth
 import (
 	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetTemporalCode(code int) *authDomain.VerificationData {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
-
-	collection := client.Database(databaseName).Collection("mmosh-users-email-verification")
+	pool := config.GetPool()
+	ctx := getContext()
 
 	var result authDomain.VerificationData
 
-	err := collection.FindOne(*ctx, bson.D{{Key: "code", Value: code}}).Decode(&result)
+	err := pool.QueryRow(ctx,
+		`SELECT email, code FROM email_verification WHERE code = $1 LIMIT 1`,
+		code,
+	).Scan(&result.Email, &result.Code)
 
-	if err == mongo.ErrNoDocuments {
+	if err != nil {
 		return nil
 	}
 

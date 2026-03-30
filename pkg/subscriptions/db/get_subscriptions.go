@@ -1,37 +1,42 @@
 package subscriptions
 
 import (
+	"context"
+	"encoding/json"
+
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 	subscriptionsDomain "github.com/mmosh-pit/mmosh_backend/pkg/subscriptions/domain"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func GetSubscriptions() ([]subscriptionsDomain.Subscription, error) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("subscription")
+	var subs []subscriptionsDomain.Subscription
 
-	var subscriptions []subscriptionsDomain.Subscription
+	rows, err := pool.Query(ctx,
+		`SELECT id, name, tier, product_id, platform, benefits FROM subscriptions ORDER BY tier DESC`,
+	)
 
-	opts := options.Find().SetSort(bson.D{{
-		Key:   "tier",
-		Value: -1,
-	}})
+	if err != nil {
+		return subs, err
+	}
+	defer rows.Close()
 
-	res, err := collection.Find(*ctx, bson.D{{}}, opts)
+	for rows.Next() {
+		var s subscriptionsDomain.Subscription
+		var benefitsJSON []byte
 
-	for res.Next(*ctx) {
-		var subscription subscriptionsDomain.Subscription
-		err = res.Decode(&subscription)
-
-		if err != nil {
-			return subscriptions, err
+		if err := rows.Scan(&s.ID, &s.Name, &s.Tier, &s.ProductId, &s.Platform, &benefitsJSON); err != nil {
+			return subs, err
 		}
 
-		subscriptions = append(subscriptions, subscription)
+		if len(benefitsJSON) > 0 {
+			json.Unmarshal(benefitsJSON, &s.Benefits)
+		}
+
+		subs = append(subs, s)
 	}
 
-	return subscriptions, err
+	return subs, rows.Err()
 }

@@ -22,5 +22,5 @@ func ValidateAuth(token string, isAdmin bool) (string, bool) {
 
 	go auth.SaveLastLogin(user.ID)
 
-	return user.ID.Hex(), true
+	return user.ID, true
 }

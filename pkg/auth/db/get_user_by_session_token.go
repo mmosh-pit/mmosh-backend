@@ -3,18 +3,18 @@ package auth
 import (
 	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func GetUserBySessionToken(token string) (*authDomain.User, error) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("mmosh-users")
+	row := pool.QueryRow(ctx,
+		`SELECT `+selectUserColumns+` FROM users WHERE sessions @> jsonb_build_array($1::text)`,
+		token,
+	)
 
-	var user authDomain.User
-
-	err := collection.FindOne(*ctx, bson.D{{Key: "sessions", Value: token}}).Decode(&user)
+	user, err := scanUser(row)
 
 	if err != nil {
 		return nil, err

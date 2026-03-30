@@ -2,6 +2,7 @@ package chat
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -11,7 +12,6 @@ import (
 	chatDb "github.com/mmosh-pit/mmosh_backend/pkg/chat/db"
 	chatDomain "github.com/mmosh-pit/mmosh_backend/pkg/chat/domain"
 	wallet "github.com/mmosh-pit/mmosh_backend/pkg/wallet/db"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var ErrWalletNotFound = errors.New("recipient-wallet-not-found")
@@ -46,28 +46,21 @@ func SendBotMessage(params SendBotMessageData) error {
 		return err
 	}
 
-	id := primitive.NewObjectID()
-
-	senderId, err := primitive.ObjectIDFromHex(params.Sender)
-
-	if err != nil {
-		log.Printf("[SEND BOT MESSAGE] invalid sender ID: %s, %v\n", params.Sender, err)
-		return err
-	}
+	tempId := fmt.Sprintf("%d", time.Now().UnixNano())
 
 	messageData := chatDomain.Message{
-		ID:        &id,
+		ID:        tempId,
 		Content:   params.Message,
-		Sender:    &senderId,
+		Sender:    params.Sender,
 		CreatedAt: time.Now(),
 		Type:      "user",
 		AgentId:   bot.Id,
 		ChatId:    bot.Id,
 	}
 
-	chatDb.SaveMessage(&messageData, messageData.ChatId, bot.Key, params.Message, "")
+	chatDb.SaveMessage(&messageData, bot.Key, params.Message, "")
 
-	client := WsPool.Clients[recipient.ID.Hex()]
+	client := WsPool.Clients[recipient.ID]
 
 	if client != nil {
 		client.sendResponse(messageData)

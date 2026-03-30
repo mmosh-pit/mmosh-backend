@@ -5,13 +5,11 @@ import (
 )
 
 func SaveTemporalCode(email string, code int) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("mmosh-users-email-verification")
-
-	collection.InsertOne(*ctx, map[string]interface{}{
-		"email": email,
-		"code":  code,
-	})
+	pool.Exec(ctx,
+		`INSERT INTO email_verification (email, code) VALUES ($1, $2)`,
+		email, code,
+	)
 }

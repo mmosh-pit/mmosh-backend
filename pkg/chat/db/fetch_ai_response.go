@@ -11,54 +11,23 @@ import (
 	"time"
 
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-// const queryData = {
-//   namespaces: [selectedChat!.chatAgent!.key, "PUBLIC"],
-//   query: content,
-//   instructions: selectedChat!.chatAgent!.system_prompt,
-//   chatHistory: chatHistory,
-//   agentId: selectedChat.chatAgent!.id,
-//   bot_id: selectedChat.chatAgent!.key,
-// };
 
 type IncomingMessage struct {
 	Type    string `json:"type"`
 	Content string `json:"content"`
 }
 
-// func formatChatHistory(messages []chatDomain.Message) []map[string]any {
-// 	var formattedHistory []map[string]any
-// 	for _, msg := range messages {
-// 		role := "assistant"
-// 		if msg.Type == "user" {
-// 			role = "user"
-// 		}
-//
-// 		formattedMsg := map[string]any{
-// 			"role":      role,
-// 			"content":   msg.Content,
-// 			"timestamp": msg.CreatedAt,
-// 		}
-// 		formattedHistory = append(formattedHistory, formattedMsg)
-// 	}
-//
-// 	return formattedHistory
-// }
-
-func FetchAIResponse(agentId *primitive.ObjectID, botId, text, systemPrompt, authToken string, chatId *primitive.ObjectID, namespaces []string, callbackChan chan string) {
-
-	parsedSystemPrompt := fmt.Sprintf("%sagentId: %s, authorization: %s", systemPrompt, agentId.Hex(), authToken)
+func FetchAIResponse(agentId, botId, text, systemPrompt, authToken, chatId string, namespaces []string, callbackChan chan string) {
+	parsedSystemPrompt := fmt.Sprintf("%sagentId: %s, authorization: %s", systemPrompt, agentId, authToken)
 
 	data := map[string]any{
 		"query":        text,
 		"namespaces":   namespaces,
 		"instructions": parsedSystemPrompt,
-		// "chatHistory":  formatChatHistory(messages),
-		"agentId": agentId.Hex(),
-		"bot_id":  botId,
-		"aiModel": "gpt-5.1",
+		"agentId":      agentId,
+		"bot_id":       botId,
+		"aiModel":      "gpt-5.1",
 	}
 
 	encoded, err := json.Marshal(data)
@@ -70,7 +39,6 @@ func FetchAIResponse(agentId *primitive.ObjectID, botId, text, systemPrompt, aut
 	}
 
 	baseUrl := config.GetAIApiUrl()
-
 	url := fmt.Sprintf("%s", baseUrl)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(encoded))
@@ -129,6 +97,5 @@ func FetchAIResponse(agentId *primitive.ObjectID, botId, text, systemPrompt, aut
 			callbackChan <- "____break____"
 			break
 		}
-
 	}
 }

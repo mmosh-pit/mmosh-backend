@@ -1,35 +1,50 @@
 package posts
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	posts "github.com/mmosh-pit/mmosh_backend/pkg/posts/domain"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	postsDomain "github.com/mmosh-pit/mmosh_backend/pkg/posts/domain"
 )
 
-func GetPostsByAuthors(authors []string) ([]posts.Post, error) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func GetPostsByAuthors(authors []string) ([]postsDomain.Post, error) {
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("posts")
+	result := []postsDomain.Post{}
 
-	posts := []posts.Post{}
+	rows, err := pool.Query(ctx,
+		`SELECT id, header, sub_header, tags, authors, body, slug, created_at, updated_at
+		 FROM posts
+		 WHERE authors ?| $1
+		 ORDER BY created_at DESC`,
+		authors,
+	)
 
-	filter := bson.M{"authors": bson.M{"$in": authors}}
-
-	findOptions := options.Find().SetSort(bson.D{{Key: "_id", Value: -1}})
-
-	cursor, err := collection.Find(*ctx, filter, findOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find posts by authors: %w", err)
 	}
-	defer cursor.Close(*ctx)
+	defer rows.Close()
 
-	if err = cursor.All(*ctx, &posts); err != nil {
-		return nil, fmt.Errorf("failed to decode posts by authors from cursor: %w", err)
+	for rows.Next() {
+		var p postsDomain.Post
+		var tagsJSON, authorsJSON []byte
+
+		if err := rows.Scan(&p.ID, &p.Header, &p.SubHeader, &tagsJSON, &authorsJSON, &p.Body, &p.Slug, &p.CreatedAt, &p.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("failed to decode posts by authors from cursor: %w", err)
+		}
+
+		if len(tagsJSON) > 0 {
+			json.Unmarshal(tagsJSON, &p.Tags)
+		}
+		if len(authorsJSON) > 0 {
+			json.Unmarshal(authorsJSON, &p.Authors)
+		}
+
+		result = append(result, p)
 	}
 
-	return posts, nil
+	return result, nil
 }

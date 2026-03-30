@@ -5,22 +5,21 @@ import (
 
 	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetUserByUuidId(id string) (authDomain.User, error) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("mmosh-users")
+	row := pool.QueryRow(ctx,
+		`SELECT `+selectUserColumns+` FROM users WHERE uuid = $1`,
+		id,
+	)
 
-	var result authDomain.User
+	result, err := scanUser(row)
 
-	err := collection.FindOne(*ctx, bson.D{{Key: "uuid", Value: id}}).Decode(&result)
-
-	if err == mongo.ErrNoDocuments {
-		log.Printf("No document was found with the title %s\n", id)
+	if err != nil {
+		log.Printf("No user found with uuid %s: %v\n", id, err)
 		return result, err
 	}
 

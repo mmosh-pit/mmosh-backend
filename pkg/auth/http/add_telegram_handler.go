@@ -10,7 +10,6 @@ import (
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/db"
 	authDomain "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	common "github.com/mmosh-pit/mmosh_backend/pkg/common/utils"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func AddTelegramHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,15 +35,7 @@ func AddTelegramHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userIdBson, err := primitive.ObjectIDFromHex(userId)
-
-	if err != nil {
-		log.Printf("error transforming to Object ID telegram: %v", err)
-		common.SendErrorResponse(w, http.StatusBadRequest, "invalid payload")
-		return
-	}
-
-	err = auth.SaveTelegramData(data, userIdBson)
+	err = auth.SaveTelegramData(data, userId)
 
 	if err != nil {
 		switch {

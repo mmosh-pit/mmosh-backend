@@ -9,20 +9,17 @@ import (
 )
 
 func SaveWalletToDb(email string, wallet *auth.WalletResponse) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("mmosh-app-user-wallet")
+	now := time.Now()
 
-	data := auth.Wallet{
-		Address:   wallet.Address,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-		Private:   wallet.KeyPackage[0],
-		Email:     email,
-	}
-
-	_, err := collection.InsertOne(*ctx, data)
+	_, err := pool.Exec(ctx,
+		`INSERT INTO wallets (address, private, email, created_at, updated_at)
+		 VALUES ($1, $2, $3, $4, $5)
+		 ON CONFLICT (email) DO UPDATE SET address = $1, private = $2, updated_at = $5`,
+		wallet.Address, wallet.KeyPackage[0], email, now, now,
+	)
 
 	if err != nil {
 		log.Printf("Error trying to save wallet: %v\n", err)

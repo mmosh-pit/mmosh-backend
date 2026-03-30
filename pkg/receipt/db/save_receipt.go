@@ -1,24 +1,24 @@
 package receiptDb
 
 import (
+	"context"
+	"time"
+
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 	receiptDomain "github.com/mmosh-pit/mmosh_backend/pkg/receipt/domain"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func SaveReceipt(data *receiptDomain.Receipt) error {
-	client, ctx := config.GetMongoClient()
-	dbName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(dbName).Collection("mmosh-app-receipt")
+	err := pool.QueryRow(ctx,
+		`INSERT INTO receipts (package_name, product_id, purchase_token, wallet, platform, created_at, expired_at, is_canceled)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		 RETURNING id`,
+		data.PackageName, data.ProductID, data.PurchaseToken, data.Wallet, data.Platform,
+		time.Now(), data.ExpiredAt, data.IsCanceled,
+	).Scan(&data.ID)
 
-	res, err := collection.InsertOne(*ctx, *data)
-	if err != nil {
-		return err
-	}
-
-	id := res.InsertedID.(primitive.ObjectID)
-	data.ID = id
-
-	return nil
+	return err
 }

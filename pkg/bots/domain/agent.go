@@ -1,26 +1,22 @@
 package bots
 
-import (
-	"time"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
-)
+import "time"
 
 type Bot struct {
-	Id               *primitive.ObjectID `bson:"_id" json:"id"`
-	Name             string              `bson:"name" json:"name"`
-	Desc             string              `bson:"desc" json:"desc"`
-	Image            string              `bson:"image" json:"image"`
-	Symbol           string              `bson:"symbol" json:"symbol"`
-	Key              string              `bson:"key" json:"key"`
-	Price            int                 `bson:"price" json:"price"`
-	PreSaleStartDate string              `bson:"presalestartdate" json:"presalestartdate"`
-	SystemPrompt     string              `bson:"system_prompt" json:"system_prompt"`
-	CreatorUsername  string              `bson:"creatorUsername" json:"creatorUsername"`
-	Type             string              `bson:"type" json:"type"`
-	DefaultModel     string              `bson:"defaultmodel" json:"defaultmodel"`
-	Deactivated      bool                `bson:"deactivated" json:"deactivated"`
-	CreatedAt        time.Time           `bson:"created_at" json:"createdAt"`
+	Id               string    `json:"id"`
+	Name             string    `json:"name"`
+	Desc             string    `json:"desc"`
+	Image            string    `json:"image"`
+	Symbol           string    `json:"symbol"`
+	Key              string    `json:"key"`
+	Price            int       `json:"price"`
+	PreSaleStartDate string    `json:"presalestartdate"`
+	SystemPrompt     string    `json:"system_prompt"`
+	CreatorUsername  string    `json:"creatorUsername"`
+	Type             string    `json:"type"`
+	DefaultModel     string    `json:"defaultmodel"`
+	Deactivated      bool      `json:"deactivated"`
+	CreatedAt        time.Time `json:"createdAt"`
 }
 
 type ToggleActivateAgentData struct {
@@ -28,40 +24,40 @@ type ToggleActivateAgentData struct {
 }
 
 type CreateAgentData struct {
-	Id               *primitive.ObjectID `bson:"_id" json:"id"`
-	Name             string              `bson:"name" json:"name"`
-	Symbol           string              `bson:"symbol" json:"symbol"`
-	Desc             string              `bson:"desc" json:"desc"`
-	Image            string              `bson:"image" json:"image"`
-	InviteImage      string              `bson:"inviteimage" json:"inviteimage"`
-	Key              string              `bson:"key" json:"key"`
-	Lut              string              `bson:"lut" json:"lut"`
-	Seniority        int                 `bson:"seniority" json:"seniority"`
-	Price            float64             `bson:"price" json:"price"` // Assuming fields.passPrice can be a float
-	Distribution     Distribution        `bson:"distribution" json:"distribution"`
-	InvitationPrice  float64             `bson:"invitationprice" json:"invitationprice"` // Assuming fields.invitationPrice can be a float
-	Discount         float64             `bson:"discount" json:"discount"`               // Assuming fields.discount can be a float
-	Telegram         string              `bson:"telegram" json:"telegram"`
-	Twitter          string              `bson:"twitter" json:"twitter"`
-	Website          string              `bson:"website" json:"website"`
-	PresaleSupply    int                 `bson:"presalesupply" json:"presalesupply"`
-	MinPresaleSupply int                 `bson:"minpresalesupply" json:"minpresalesupply"`
-	PresaleStartDate string              `bson:"presalestartdate" json:"presalestartdate"`
-	PresaleEndDate   string              `bson:"presaleenddate" json:"presaleenddate"`
-	DexListingDate   string              `bson:"dexlistingdate" json:"dexlistingdate"`
-	Creator          string              `bson:"creator" json:"creator"`
-	CreatorUsername  string              `bson:"creatorUsername" json:"creatorUsername"`
-	Type             string              `bson:"type" json:"type"`
-	Code             string              `bson:"code" json:"code"`
-	Privacy          string              `bson:"privacy" json:"privacy"`
-	DefaultModel     string              `bson:"defaultmodel" json:"defaultmodel"`
-	CreatedAt        time.Time           `bson:"created_at" json:"createdAt"`
+	Id               string       `json:"id"`
+	Name             string       `json:"name"`
+	Symbol           string       `json:"symbol"`
+	Desc             string       `json:"desc"`
+	Image            string       `json:"image"`
+	InviteImage      string       `json:"inviteimage"`
+	Key              string       `json:"key"`
+	Lut              string       `json:"lut"`
+	Seniority        int          `json:"seniority"`
+	Price            float64      `json:"price"`
+	Distribution     Distribution `json:"distribution"`
+	InvitationPrice  float64      `json:"invitationprice"`
+	Discount         float64      `json:"discount"`
+	Telegram         string       `json:"telegram"`
+	Twitter          string       `json:"twitter"`
+	Website          string       `json:"website"`
+	PresaleSupply    int          `json:"presalesupply"`
+	MinPresaleSupply int          `json:"minpresalesupply"`
+	PresaleStartDate string       `json:"presalestartdate"`
+	PresaleEndDate   string       `json:"presaleenddate"`
+	DexListingDate   string       `json:"dexlistingdate"`
+	Creator          string       `json:"creator"`
+	CreatorUsername  string       `json:"creatorUsername"`
+	Type             string       `json:"type"`
+	Code             string       `json:"code"`
+	Privacy          string       `json:"privacy"`
+	DefaultModel     string       `json:"defaultmodel"`
+	CreatedAt        time.Time    `json:"createdAt"`
 }
 
 type Distribution struct {
-	Creator   int `bson:"creator" json:"creator"`
-	Curator   int `bson:"curator" json:"curator"`
-	Ecosystem int `bson:"ecosystem" json:"echosystem"`
-	Promoter  int `bson:"promoter" json:"promoter"`
-	Scout     int `bson:"scout" json:"scout"`
+	Creator   int `json:"creator"`
+	Curator   int `json:"curator"`
+	Ecosystem int `json:"echosystem"`
+	Promoter  int `json:"promoter"`
+	Scout     int `json:"scout"`
 }

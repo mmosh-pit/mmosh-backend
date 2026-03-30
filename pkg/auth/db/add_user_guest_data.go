@@ -1,21 +1,26 @@
 package auth
 
 import (
+	"encoding/json"
+
 	auth "github.com/mmosh-pit/mmosh_backend/pkg/auth/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func AddUserGuestData(data auth.User, userId *primitive.ObjectID) error {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func AddUserGuestData(data auth.User, userId string) error {
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("mmosh-users")
+	websitesJSON, _ := json.Marshal(data.Websites)
 
-	_, err := collection.UpdateByID(*ctx, userId, bson.D{{
-		Key: "$set", Value: data,
-	}})
+	_, err := pool.Exec(ctx,
+		`UPDATE users SET name = $1, display_name = $2, username = $3, bio = $4,
+		  picture = $5, banner = $6, websites = $7, symbol = $8, link = $9
+		 WHERE id = $10`,
+		data.Name, data.DisplayName, data.Username, data.Bio,
+		data.Picture, data.Banner, websitesJSON, data.Symbol, data.Link,
+		userId,
+	)
 
 	return err
 }

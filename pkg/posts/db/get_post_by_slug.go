@@ -1,30 +1,43 @@
 package posts
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
 	postsDomain "github.com/mmosh-pit/mmosh_backend/pkg/posts/domain"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetPostBySlug(slug string) (*postsDomain.Post, error) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := context.Background()
 
-	collection := client.Database(databaseName).Collection("posts")
+	var p postsDomain.Post
+	var tagsJSON, authorsJSON []byte
 
-	var post postsDomain.Post
-	filter := bson.M{"slug": slug}
+	err := pool.QueryRow(ctx,
+		`SELECT id, header, sub_header, tags, authors, body, slug, created_at, updated_at
+		 FROM posts WHERE slug = $1`,
+		slug,
+	).Scan(&p.ID, &p.Header, &p.SubHeader, &tagsJSON, &authorsJSON, &p.Body, &p.Slug, &p.CreatedAt, &p.UpdatedAt)
 
-	err := collection.FindOne(*ctx, filter).Decode(&post)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, errors.New("post not found")
+	}
+
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, errors.New("post not found")
-		}
 		return nil, fmt.Errorf("failed to find post by slug '%s': %w", slug, err)
 	}
-	return &post, nil
+
+	if len(tagsJSON) > 0 {
+		json.Unmarshal(tagsJSON, &p.Tags)
+	}
+	if len(authorsJSON) > 0 {
+		json.Unmarshal(authorsJSON, &p.Authors)
+	}
+
+	return &p, nil
 }

@@ -2,14 +2,14 @@ package auth
 
 import (
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func DeleteTemporalCode(code int) {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("mmosh-users-email-verification")
-
-	collection.DeleteOne(*ctx, bson.D{{Key: "code", Value: code}})
+	pool.Exec(ctx,
+		`DELETE FROM email_verification WHERE code = $1`,
+		code,
+	)
 }

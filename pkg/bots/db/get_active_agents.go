@@ -1,43 +1,36 @@
 package bots
 
 import (
+	"context"
 	"log"
 
 	agentsDomain "github.com/mmosh-pit/mmosh_backend/pkg/bots/domain"
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func GetActiveAgents(userId string) []agentsDomain.ActivatedAgentResponse {
-
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
-
-	collection := client.Database(databaseName).Collection("mmosh-app-activated-agents")
+	pool := config.GetPool()
+	ctx := context.Background()
 
 	resultingAgents := []agentsDomain.ActivatedAgentResponse{}
 
-	res, err := collection.Find(*ctx, bson.D{{Key: "userId", Value: userId}}, &options.FindOptions{
-		Projection: map[string]any{
-			"agentId": 1,
-		},
-	})
+	rows, err := pool.Query(ctx,
+		`SELECT agent_id FROM activated_agents WHERE user_id = $1`,
+		userId,
+	)
 
 	if err != nil {
 		log.Printf("Could not get activated agents: %v\n", err)
 		return resultingAgents
 	}
+	defer rows.Close()
 
-	for res.Next(*ctx) {
+	for rows.Next() {
 		var agent agentsDomain.ActivatedAgentResponse
-
-		if err := res.Decode(&agent); err != nil {
+		if err := rows.Scan(&agent.AgentId); err != nil {
 			log.Printf("Error trying to decode activated agent: %v\n", err)
-
 			continue
 		}
-
 		resultingAgents = append(resultingAgents, agent)
 	}
 

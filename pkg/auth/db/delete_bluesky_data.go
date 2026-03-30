@@ -2,22 +2,15 @@ package auth
 
 import (
 	"github.com/mmosh-pit/mmosh_backend/pkg/config"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func DeleteBlueskyData(userId primitive.ObjectID) error {
-	client, ctx := config.GetMongoClient()
-	databaseName := config.GetDatabaseName()
+func DeleteBlueskyData(userId string) error {
+	pool := config.GetPool()
+	ctx := getContext()
 
-	collection := client.Database(databaseName).Collection("mmosh-users")
-
-	filter := bson.D{{Key: "_id", Value: userId}}
-
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "bluesky", Value: nil}, {Key: "hasBlueSkyConnected", Value: false}}}}
-
-	_, err := collection.UpdateOne(
-		*ctx, filter, update,
+	_, err := pool.Exec(ctx,
+		`UPDATE users SET bluesky = NULL WHERE id = $1`,
+		userId,
 	)
 
 	return err
